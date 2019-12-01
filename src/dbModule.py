@@ -24,7 +24,7 @@ class Database():
         #logcheck 이후에 당연하게도 UserID 및 Name 등은 Global variable이 되어야함.
 
     def getRequestList(self,UserID):
-        sql ="""select FromID, GroupID, isInvite
+        sql ="""select RequestNo, FromID, ToID, GroupID, isInvite
                 from Request
                 where ToID = %s"""
         self.cursor.execute(sql,(UserID))

@@ -330,7 +330,90 @@ class ShowRequest(tk.Frame):
         self.db = db
         b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
                     height=2)
-        b1.grid(row=0, column=0)
+        b1.grid(row=0, column=0,columnspan=4)
+        #TODO
+        UserID = "2015147040"
+        request = db.getRequestList(UserID)
+
+        label1 = Label(self, text = "요청자", width =8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="그룹명", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="초대/신청여부", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="수락하기", width =8)
+        label4.grid(row=1, column=3)
+        label5 = Label(self, text="거절하기", width =8)
+        label5.grid(row=1, column=4)
+
+        def accept(idx):
+            sql = """Insert into Participant(GroupID, UserID, isCaptain)
+            values(%s, %s, 0)"""
+            req = request[idx]
+            if int(req["isInvite"]):
+                db.execute(sql,(req["GroupID"],req["ToID"]))
+            else:
+                db.execute(sql,(req["GroupID"],req["FromID"]))
+
+            for item in requests_implement[idx]:
+                item.destroy()
+        def refuse(idx):
+            req = request[idx]
+            sql = """Delete From Request WHERE RequestNo =%s"""
+            db.execute(sql,(req["RequestNo"]))
+
+
+            for item in requests_implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        requests_implement = []
+
+        # request = [{"RequestNo" : "1", "FromID": "2015147040", "ToID":"2015147001","GroupID":1,"isInvite":"1"},
+        #            {"RequestNo" : "2", "FromID": "2015147032", "ToID":"2015147010","GroupID":2,"isInvite":"0"},
+        #            {"RequestNo" : "3", "FromID": "2015147012", "ToID":"2015147012","GroupID":3,"isInvite":"1"}]
+        # PersonName = ["황동영","김용우","조동규"]
+        # GroupNames = ["와이빅타","산정관","야이"]
+
+        for req in request:
+            cnt +=1
+            item = []
+            sql = """Select Name FROM USERS WHERE UserID = %s"""
+            row = db.executeOne(sql, req["FromID"])
+            inviter_name = row["Name"]
+            #inviter_name = PersonName[cnt-1]
+            sql = """SELECT GroupName From Gr0up where GroupID = %s"""
+            row = db.executeOne(sql, req["GroupID"])
+            group_name = row["GroupName"]
+            #group_name = GroupNames[cnt-1]
+
+            item.append(Label(self, text = inviter_name, width = 8))
+            item.append(Label(self, text = group_name, width = 8))
+
+            if int(req["isInvite"]) :
+                item.append(Label(self, text = "초대",width = 8))
+            else:
+                item.append(Label(self, text = "신청",width = 8))
+            self.button = Button(self, text="수락", width = 8)
+            self.button['command'] = lambda idx=cnt-1 : accept(idx)
+            item.append(self.button)
+            self.button = Button(self, text="거절", width = 8)
+            self.button['command'] = lambda idx=cnt-1: refuse(idx)
+            item.append(self.button)
+            requests_implement.append(item)
+
+        for kk in range(len(requests_implement)):
+            requests_implement[kk][0].grid(row = i, column = 0)
+            requests_implement[kk][1].grid(row = i, column = 1)
+            requests_implement[kk][2].grid(row = i, column = 2)
+            requests_implement[kk][3].grid(row = i, column = 3)
+            requests_implement[kk][4].grid(row=i, column=4)
+
+            i+=1
+
+
+
 class FindUser(tk.Frame):
     def __init__(self,parent, controller, db):
         tk.Frame.__init__(self, parent)
