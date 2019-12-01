@@ -43,7 +43,7 @@ class Database():
                         from Participant
                         where GroupID = %s)
                 union
-                select distinct ScheduleOfWeek, ScheduleTime
+                select distinct ScheduleDayOfWeek, ScheduleTime
                 from Personal_Schedule 
                 WHERE TaskDate <= %s and TaskDate >= %s and UserID in
                         (select UserID

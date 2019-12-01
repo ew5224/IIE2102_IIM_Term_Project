@@ -7,6 +7,7 @@ from tkinter import filedialog
 import dbModule
 import datetime
 import tkinter.messagebox
+from tkinter.messagebox import showinfo
 
 class MainApp(tk.Tk):
     def __init__(self, db, *args, **kwargs):
@@ -128,6 +129,7 @@ class Select_GroupTask_Term(tk.Frame):
 
         def confirm():
             #selected_GroupID = my_groups_dict[var1.get()]
+            #TODO
             selected_GroupID = "2015147040"
             CurrentTaskName = TaskNameVar.get()
             selected_StartDate = StartDateVar.get()
@@ -189,6 +191,7 @@ class Select_from_group_available(tk.Frame):
             controller.show_frame("mainPage")
 
         #ExOfUnT = db.getGroupAvailableTime(selected_GroupID, selected_StartDate, selected_EndDate)
+        #TODO
         ExOfUnT = [{'TaskDayOfWeek': 3, 'TaskTime': 12},
                    {'TaskDayOfWeek': 3, 'TaskTime': 13},
                    {'TaskDayOfWeek': 2, 'TaskTime': 18},
@@ -212,6 +215,94 @@ class Select_from_group_available(tk.Frame):
         b = Button(self, text="확인", command=getSelected, width=10)
         b.grid(row=12, column=11)
 
+class MakePersonalSchedule(tk.Frame):
+    def __init__(self,parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        label1 = Label(self, text = "스케줄 이름")
+        label1.grid(row=1, column=0)
+
+        ScheduleNameVar = StringVar()
+
+        ScheduleName_Entry = Entry(self, width=40, textvariable=ScheduleNameVar)
+        ScheduleName_Entry.insert(END, "스케줄 이름을 입력해주세요")
+        ScheduleName_Entry.grid(row=2, column=0)
+
+        label2 = Label(self, text="스케줄 날짜")
+        label2.grid(row=3, column=0)
+
+        ScheduleDateVar = StringVar()
+
+        ScheduleDate_Entry = Entry(self, width=40, textvariable=ScheduleDateVar)
+        ScheduleDate_Entry.insert(END, "스케줄 날짜를 입력해주세요(YYYY-MM-DD)")
+        ScheduleDate_Entry.grid(row=4, column=0)
+
+        label3 = Label(self, text="스케줄 시간")
+        label3.grid(row=5, column=0)
+
+        ScheduleTimeVar = StringVar()
+        ScheduleTime_Entry = Entry(self, width=40, textvariable=ScheduleTimeVar)
+        ScheduleTime_Entry.insert(END, "스케줄 시작 시간을 입력해주세요(24시간 단위, 0~23)")
+        ScheduleTime_Entry.grid(row=6, column=0)
+
+        label4 = Label(self, text="스케줄 길이")
+        label4.grid(row=7, column=0)
+
+        ScheduleTermVar = StringVar()
+        ScheduleTerm_Entry = Entry(self, width=40, textvariable=ScheduleTermVar)
+        ScheduleTerm_Entry.insert(END, "스케줄 시간을 입력해주세요(시간 단위)")
+        ScheduleTerm_Entry.grid(row=8, column=0)
+
+        def validate_schedule():
+            name = ScheduleNameVar.get()
+            date = ScheduleDateVar.get()
+            time = ScheduleTimeVar.get()
+            term = ScheduleTermVar.get()
+
+            print(name, date, time, term)
+            term = int(term)-1
+            time = int(time)
+            lst = [time]
+            if term!=0:
+                for i in range(1,term+1):
+                    lst.append(time+i)
+            print(lst)
+            cnt = 0
+            #TODO
+            UserID = "2015147040"
+            sql = """select TaskTime
+                From Group_Schedule
+                WHERE TaskDate = %s and TaskTime = %s and UserID = %s
+                union
+                select ScheduleTime
+                from Personal_Schedule 
+                WHERE ScheduleDate = %s and ScheduleTime = %s and UserID = %s
+            """
+
+            for t in lst:
+                data = db.executeAll(sql,(date, str(t), UserID, date, str(t), UserID))
+                cnt += len(data)
+
+            if cnt!=0:
+                showinfo("Error", "겹치는 시간이 있습니다.")
+            else:
+                convert_date = datetime.datetime.strptime(date,"%Y-%m-%d").date()
+                dayofweek = convert_date.weekday()
+                sql = """INSERT INTO PERSONAL_SCHEDULE(UserID, ScheduleName, ScheduleDate, ScheduleDayOfWeek, ScheduleTime)
+                values(%s,%s,%s,%s,%s)
+                """
+
+                for t in lst:
+                    db.execute(sql,(UserID,name, date, str(dayofweek), t))
+
+                controller.show_frame("mainPage")
+        b2 = Button(self, text = "확인", command = validate_schedule)
+        b2.grid(row = 9,column =0)
 class TimeTable(tk.Frame):
     def __init__(self,parent, controller, db):
         tk.Frame.__init__(self, parent)
@@ -230,14 +321,7 @@ class ScheduleList(tk.Frame):
                     height=2)
         b1.grid(row=0, column=0)
 
-class MakePersonalSchedule(tk.Frame):
-    def __init__(self,parent, controller, db):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.db = db
-        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
-                    height=2)
-        b1.grid(row=0, column=0)
+
 
 class ShowRequest(tk.Frame):
     def __init__(self,parent, controller, db):
