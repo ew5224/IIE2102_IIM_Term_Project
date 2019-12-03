@@ -7,7 +7,7 @@ class Database():
         self.db= pymysql.connect(host='localhost', port= 3306,
                                   user='root',
                                   password='yourpasswd',
-                                  db='Linked_Schedule',
+                                  db='pro',
                                   charset='utf8')
         self.cursor= self.db.cursor(pymysql.cursors.DictCursor)
 
@@ -45,7 +45,7 @@ class Database():
                 union
                 select distinct ScheduleDayOfWeek, ScheduleTime
                 from Personal_Schedule 
-                WHERE TaskDate <= %s and TaskDate >= %s and UserID in
+                WHERE ScheduleDate <= %s and ScheduleDate >= %s and UserID in
                         (select UserID
                         from Participant
                         where GroupID = %s)

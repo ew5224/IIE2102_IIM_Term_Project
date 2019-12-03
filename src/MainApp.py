@@ -4,17 +4,235 @@ from tkinter import DISABLED
 from tkinter import font  as tkfont  # python 3
 from tkinter import ttk
 from tkinter import filedialog
+import pymysql
 import dbModule
 import datetime
 import tkinter.messagebox
 from tkinter.messagebox import showinfo
 
+db = pymysql.connect(host='localhost', port=3306, user='root', password='yourpasswd', db='pro', charset='utf8')
+cursor = db.cursor(pymysql.cursors.DictCursor)
+
+def register():
+    global register_screen
+    register_screen = Toplevel(main_screen)
+    register_screen.title("Register")
+    register_screen.geometry("300x600")
+
+    global username
+    global password
+    global username_entry
+    global password_entry
+    global name
+    global age
+    global job
+    global major
+    global email
+    global name_entry
+    global age_entry
+    global job_entry
+    global major_entry
+    global email_entry
+
+    username = StringVar()
+    password = StringVar()
+    name = StringVar()
+    age = StringVar()
+    job = StringVar()
+    major = StringVar()
+    email = StringVar()
+
+    Label(register_screen, text="계정등록", font=('맑은 고딕', 15)).pack()
+    Label(register_screen, text="").pack()
+
+    username_lable = Label(register_screen, text="ID")
+    username_lable.pack()
+    username_entry = Entry(register_screen, textvariable=username)
+    username_entry.pack()
+
+    password_lable = Label(register_screen, text="Password")
+    password_lable.pack()
+    password_entry = Entry(register_screen, textvariable=password, show='*')
+    password_entry.pack()
+
+    name_lable = Label(register_screen, text="이름")
+    name_lable.pack()
+    name_entry = Entry(register_screen, textvariable=name)
+    name_entry.pack()
+
+    age_lable = Label(register_screen, text="생년월일")
+    age_lable.pack()
+    age_entry = Entry(register_screen, textvariable=age)
+    age_entry.pack()
+
+    job_lable = Label(register_screen, text="직업")
+    job_lable.pack()
+    job_entry = Entry(register_screen, textvariable=job)
+    job_entry.pack()
+
+    major_lable = Label(register_screen, text="전공")
+    major_lable.pack()
+    major_entry = Entry(register_screen, textvariable=major)
+    major_entry.pack()
+
+    email_lable = Label(register_screen, text="Email")
+    email_lable.pack()
+    email_entry = Entry(register_screen, textvariable=email)
+    email_entry.pack()
+
+    Label(register_screen, text="").pack()
+    Button(register_screen, text="Register", width=10, height=1, bg="white", command=register_user).pack()
+
+
+def login():
+    global login_screen
+    login_screen = Toplevel(main_screen)
+    login_screen.title("Login")
+    login_screen.geometry("300x250")
+    Label(login_screen, text="Please enter details below to login").pack()
+    Label(login_screen, text="").pack()
+
+    global username_verify
+    global password_verify
+
+    username_verify = StringVar()
+    password_verify = StringVar()
+
+    global username_login_entry
+    global password_login_entry
+
+    Label(login_screen, text="Username * ").pack()
+    username_login_entry = Entry(login_screen, textvariable=username_verify)
+    username_login_entry.pack()
+    Label(login_screen, text="").pack()
+    Label(login_screen, text="Password * ").pack()
+    password_login_entry = Entry(login_screen, textvariable=password_verify, show='*')
+    password_login_entry.pack()
+    Label(login_screen, text="").pack()
+    Button(login_screen, text="Login", width=10, height=1, command=login_verify).pack()
+
+
+def register_user():
+    username_info = username.get()
+    password_info = password.get()
+    name_info = name.get()
+    age_info = age.get()
+    name_info = name.get()
+    job_info = job.get()
+    major_info = major.get()
+    email_info = email.get()
+
+    User_temp = [username_info, password_info, name_info, age_info, job_info, major_info, email_info]
+    #User.loc[len(User)] = User_temp #TODO
+
+    sql_register_USERS = '''INSERT INTO users VALUES('{ID}','{password}','{name}',{age},'{job}','{major}','{email}');'''.format(
+        ID=username_info, password=password_info, name=name_info, age=int(age_info), job=job_info, major=major_info,
+        email=email_info)
+    print(sql_register_USERS)
+    cursor.execute(sql_register_USERS)
+    db.commit()
+
+    username_entry.delete(0, END)
+    password_entry.delete(0, END)
+
+    Label(register_screen, text="등록 성공", fg="green", font=("맑은 고딕", 15)).pack()
+
+
+def login_verify():
+    global username1
+    username1 = username_verify.get()
+    password1 = password_verify.get()
+    username_login_entry.delete(0, END)
+    password_login_entry.delete(0, END)
+
+    sql_call_USERS = '''SELECT * FROM USERS WHERE UserID= '{UserID}' and PW='{PW}';'''.format(UserID=username1,
+                                                                                              PW=password1)
+    cursor.execute(sql_call_USERS)
+    global usingdata
+
+    usingdata = cursor.fetchall()
+
+    if len(usingdata) == 1:
+        login_sucess()
+        print(usingdata)
+
+    else:
+        password_not_recognized()
+
+
+def login_sucess():
+    global login_success_screen
+    login_success_screen = Toplevel(login_screen)
+    login_success_screen.title("Success")
+    login_success_screen.geometry("150x100")
+    Label(login_success_screen, text="Login Success").pack()
+    Button(login_success_screen, text="OK", command=delete_login_success).pack()
+
+
+def password_not_recognized():
+    global password_not_recog_screen
+    password_not_recog_screen = Toplevel(login_screen)
+    password_not_recog_screen.title("Success")
+    password_not_recog_screen.geometry("150x100")
+    Label(password_not_recog_screen, text="Invalid Password ").pack()
+    Button(password_not_recog_screen, text="OK", command=delete_password_not_recognized).pack()
+
+
+def user_not_found():
+    global user_not_found_screen
+    user_not_found_screen = Toplevel(login_screen)
+    user_not_found_screen.title("Success")
+    user_not_found_screen.geometry("150x100")
+    Label(user_not_found_screen, text="User Not Found").pack()
+    Button(user_not_found_screen, text="OK", command=delete_user_not_found_screen).pack()
+
+
+def delete_login_success():
+    login_success_screen.destroy()
+    main_screen.destroy()
+    db = dbModule.Database()
+    program = MainApp(db, username1, usingdata[0]['Name'])
+    program.mainloop()
+
+def delete_password_not_recognized():
+    password_not_recog_screen.destroy()
+
+
+def delete_user_not_found_screen():
+    user_not_found_screen.destroy()
+
+
+# Designing Main(first) window
+
+def main_account_screen():
+    global main_screen
+    main_screen = Tk()
+    main_screen.geometry("300x250")
+    main_screen.title("Account Login")
+    #main_screen.grid(row=0, column=0, sticky="nsew")
+    main_screen.configure(background='light yellow')
+    Label(text="Select Your Choice", bg="blue", width="300", height="2", font=("Calibri", 13)).pack()
+    Label(text="").pack()
+    Button(text="Login", height="2", width="30", command=login).pack()
+    Label(text="").pack()
+    Button(text="Register", height="2", width="30", command=register).pack()
+
+    main_screen.mainloop()
+
+def raise_frame(frame):
+    frame.tkraise()
+
 class MainApp(tk.Tk):
-    def __init__(self, db, *args, **kwargs):
+    def __init__(self, db, ID, Name, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("Linked Schedule")
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
+        global UserID
+        global UserName
+
+        UserID = ID
+        UserName = Name
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
         # will be raised above the others
@@ -24,8 +242,10 @@ class MainApp(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+
+
         self.frames = {}
-        for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term, Select_from_group_available):
+        for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term):
             page_name = F.__name__
             frame = F(parent=container, controller=self, db = db)
             self.frames[page_name] = frame
@@ -71,7 +291,7 @@ class Select_GroupTask_Term(tk.Frame):
         self.controller = controller
         #self.title("과업 이름, 과업 시작일, 과업 종료일을 말해주세요")
         self.db = db
-        UserID = "2015147040" # 삭제 필
+        #UserID = "2015147040" # 삭제 필
         Label1 = Label(self, text = "그룹 선택", width=40, height=2)
         Label1.grid(row=1, column=0)
         sql = """Select GroupID, GroupName From Gr0up
@@ -130,12 +350,19 @@ class Select_GroupTask_Term(tk.Frame):
         def confirm():
             #selected_GroupID = my_groups_dict[var1.get()]
             #TODO
-            selected_GroupID = "2015147040"
+            selected_GroupID = my_groups_dict[var1.get()]
             CurrentTaskName = TaskNameVar.get()
             selected_StartDate = StartDateVar.get()
             selected_EndDate = EndDateVar.get()
+            frame = Select_from_group_available(parent=parent, controller=controller, db = db ,
+                                                GID = selected_GroupID,
+                                                TName = CurrentTaskName,
+                                                StartD = selected_StartDate,
+                                                EndD = selected_EndDate)
 
-            controller.show_frame("Select_from_group_available")
+            frame.grid(row = 0, column = 0, sticky = "nsew")
+            frame.tkraise()
+            #controller.show_frame("Select_from_group_available")
 
 
 
@@ -146,7 +373,7 @@ class Select_GroupTask_Term(tk.Frame):
 
 
 class Select_from_group_available(tk.Frame):
-    def __init__(self, parent, controller,db):
+    def __init__(self, parent, controller,db, GID, TName,StartD, EndD):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         #self.title("원하는 과업시간을 체크해주세")
@@ -174,7 +401,10 @@ class Select_from_group_available(tk.Frame):
             for j in range(len(row)):
                 if row[j].get() == 0:
                     deselected.append(j)
-
+        G_ID = GID
+        T_Name = TName
+        Start_D = StartD
+        End_D = EndD
         def getSelected():
             selected = []
             for i in range(len(boxVars)):
@@ -185,20 +415,20 @@ class Select_from_group_available(tk.Frame):
             VALUES(%s,%s,%s,%s,%s,%s)
             """
             for selected_dict in selected:
-                self.db.execute(query,(selected_GroupID, CurrentTaskName, selected_dict["TaskDayOfWeek"],
-                                       selected_dict["TaskTime"],selected_StartDate, selected_EndDate))
+                self.db.execute(query,(G_ID, T_Name, selected_dict["TaskDayOfWeek"],
+                                       selected_dict["TaskTime"],Start_D, End_D))
 
             controller.show_frame("mainPage")
 
-        #ExOfUnT = db.getGroupAvailableTime(selected_GroupID, selected_StartDate, selected_EndDate)
-        #TODO
-        ExOfUnT = [{'TaskDayOfWeek': 3, 'TaskTime': 12},
-                   {'TaskDayOfWeek': 3, 'TaskTime': 13},
-                   {'TaskDayOfWeek': 2, 'TaskTime': 18},
-                   {'TaskDayOfWeek': 1, 'TaskTime': 18},
-                   {'TaskDayOfWeek': 6, 'TaskTime': 18},
-                   {'TaskDayOfWeek': 0, 'TaskTime': 6},
-                   {'TaskDayOfWeek': 4, 'TaskTime': 10}]
+        ExOfUnT = db.getGroupAvailableTime(G_ID, Start_D, End_D)
+
+        # ExOfUnT = [{'TaskDayOfWeek': 3, 'TaskTime': 12},
+        #            {'TaskDayOfWeek': 3, 'TaskTime': 13},
+        #            {'TaskDayOfWeek': 2, 'TaskTime': 18},
+        #            {'TaskDayOfWeek': 1, 'TaskTime': 18},
+        #            {'TaskDayOfWeek': 6, 'TaskTime': 18},
+        #            {'TaskDayOfWeek': 0, 'TaskTime': 6},
+        #            {'TaskDayOfWeek': 4, 'TaskTime': 10}]
 
         dayofweek = list("월 화 수 목 금 토 일".split(" "))
         for x in range(rows):  # times
@@ -274,7 +504,7 @@ class MakePersonalSchedule(tk.Frame):
             print(lst)
             cnt = 0
             #TODO
-            UserID = "2015147040"
+            #UserID = "2015147040"
             sql = """select TaskTime
                 From Group_Schedule
                 WHERE TaskDate = %s and TaskTime = %s and UserID = %s
@@ -332,7 +562,7 @@ class ShowRequest(tk.Frame):
                     height=2)
         b1.grid(row=0, column=0,columnspan=4)
         #TODO
-        UserID = "2015147040"
+        #UserID = "2015147040"
         request = db.getRequestList(UserID)
 
         label1 = Label(self, text = "요청자", width =8)
@@ -422,6 +652,7 @@ class FindUser(tk.Frame):
         b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
                     height=2)
         b1.grid(row=0, column=0)
+
 class FindGroup(tk.Frame):
     def __init__(self,parent, controller, db):
         tk.Frame.__init__(self, parent)
@@ -431,8 +662,6 @@ class FindGroup(tk.Frame):
                     height=2)
         b1.grid(row=0, column=0)
 # Create the entire GUI program
-db = dbModule.Database()
-program = MainApp(db)
 
-# Start the GUI event loop
-program.mainloop()
+if __name__ == "__main__" :
+    main_account_screen()
