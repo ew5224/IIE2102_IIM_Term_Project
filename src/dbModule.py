@@ -71,10 +71,6 @@ class Database():
         self.db.commit()
 
 
-
-    def execute(self, query, args={}):
-        self.cursor.execute(query, args)
-
     def executeOne(self, query, args={}):
         self.cursor.execute(query, args)
         row= self.cursor.fetchone()
@@ -87,3 +83,7 @@ class Database():
 
     def commit(self):
         self.db.commit()
+
+    def execute(self, query, args={}):
+        self.cursor.execute(query, args)
+        self.commit()

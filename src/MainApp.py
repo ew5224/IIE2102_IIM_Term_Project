@@ -721,8 +721,8 @@ class Select_from_group_available(tk.Frame):
             for selected_dict in selected:
                 self.db.execute(query,(G_ID, T_Name, selected_dict["TaskDayOfWeek"],
                                        selected_dict["TaskTime"],Start_D, End_D))
-
-            controller.show_frame("mainPage")
+            showinfo("Success", "정상적으로 추가되었습니다.")
+            controller.show_frame("MainPage")
 
         ExOfUnT = db.getGroupAvailableTime(G_ID, Start_D, End_D)
 
@@ -833,8 +833,8 @@ class MakePersonalSchedule(tk.Frame):
 
                 for t in lst:
                     db.execute(sql,(UserID,name, date, str(dayofweek), t))
-
-                controller.show_frame("mainPage")
+                showinfo("Success", "정상적으로 추가되었습니다.")
+                controller.show_frame("MainPage")
         b2 = Button(self, text = "확인", command = validate_schedule)
         b2.grid(row = 9,column =0)
 class TimeTable(tk.Frame):
