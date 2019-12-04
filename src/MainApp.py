@@ -245,7 +245,8 @@ class MainApp(tk.Tk):
 
 
         self.frames = {}
-        for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term):
+        for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term,
+                  AddEx, Lang, Licen, Intern, Cir):
             page_name = F.__name__
             frame = F(parent=container, controller=self, db = db)
             self.frames[page_name] = frame
@@ -268,14 +269,14 @@ class MainPage(tk.Frame):
         self.controller = controller
         self.db = db
 
-        b1 = Button(self, text="내 시간표 보기", command = lambda :  controller.show_frame("TimeTable"),width=40,height=3)
-        b2 = Button(self, text="일정보기(리스트)", command = lambda : controller.show_frame("ScheduleList"),width=40,height=3)
-        b3 = Button(self, text="개인 일정 생성", command = lambda : controller.show_frame("MakePersonalSchedule"), width=40, height=3)
-        b4 = Button(self, text="그룹 일정 생성", command = lambda : controller.show_frame("Select_GroupTask_Term"),width=40,height=3)
-        b5 = Button(self, text="받은 초대 확인", command = lambda : controller.show_frame("ShowRequest"),width=40,height=3)
-        b6 = Button(self, text="그룹원 찾기", command = lambda : controller.show_frame("FindUser"),width=40,height=3)
-        b7 = Button(self, text="그룹 찾기", command = lambda : controller.show_frame("FindGroup"),width=40,height=3)
-
+        b1 = Button(self, text="내 시간표 보기", command = lambda :  controller.show_frame("TimeTable"),width=40,height=2)
+        b2 = Button(self, text="일정보기(리스트)", command = lambda : controller.show_frame("ScheduleList"),width=40,height=2)
+        b3 = Button(self, text="개인 일정 생성", command = lambda : controller.show_frame("MakePersonalSchedule"), width=40, height=2)
+        b4 = Button(self, text="그룹 일정 생성", command = lambda : controller.show_frame("Select_GroupTask_Term"),width=40,height=2)
+        b5 = Button(self, text="받은 초대 확인", command = lambda : controller.show_frame("ShowRequest"),width=40,height=2)
+        b6 = Button(self, text="그룹원 찾기", command = lambda : controller.show_frame("FindUser"),width=40,height=2)
+        b7 = Button(self, text="그룹 찾기", command = lambda : controller.show_frame("FindGroup"),width=40,height=2)
+        b8 = Button(self, text="경력 추가하기", command = lambda : controller.show_frame("AddEx"),width=40,height=2)
         b1.grid(row=0, column=0)
         b2.grid(row=1, column=0)
         b3.grid(row=2, column=0)
@@ -283,7 +284,310 @@ class MainPage(tk.Frame):
         b5.grid(row=4, column=0)
         b6.grid(row=5, column=0)
         b7.grid(row=6, column=0)
+        b8.grid(row=7, column=0)
 
+class AddEx(tk.Frame):
+    def __init__(self,parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+        label = Label(self, text = "경력 종류를 선택해주세요", width=40, height=2)
+        label.grid(row=1,column=0)
+        b2 = Button(self, text="어학", command=lambda: controller.show_frame("Lang"), width=40, height=2)
+        b2.grid(row=2, column=0)
+        b3 = Button(self, text="자격증", command=lambda: controller.show_frame("Licen"), width=40, height=2)
+        b3.grid(row=3, column=0)
+        b4 = Button(self, text="인턴십", command=lambda: controller.show_frame("Intern"), width=40, height=2)
+        b4.grid(row=4, column=0)
+        b5 = Button(self, text="동아리/학회", command=lambda: controller.show_frame("Cir"), width=40, height=2)
+        b5.grid(row=5, column=0)
+
+class Lang(tk.Frame):
+    def __init__(self,parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("AddEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        Label2 = Label(self, text="시험명", width=40, height=2)
+        Label2.grid(row=1, column=0)
+
+        NameVar = StringVar()
+
+        Name_Entry = Entry(self, width=40, textvariable=NameVar)
+        Name_Entry.insert(END, "어학시험명을 입력해주세요")
+        Name_Entry.grid(row=2, column=0)
+
+        Label3 = Label(self, text="점수", width=40, height=2)
+        Label3.grid(row=3, column=0)
+
+        ScoreVar = StringVar()
+
+        Score_Entry = Entry(self, width=40, textvariable=ScoreVar)
+        Score_Entry.insert(END, "시험 점수를 입력해주세요")
+        Score_Entry.grid(row=4, column=0)
+
+        Label4 = Label(self, text="취득일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label4.grid(row=5, column=0)
+
+        IssueVar = StringVar()
+
+        Issue_Entry = Entry(self, width=40, textvariable=IssueVar)
+        Issue_Entry.grid(row=6, column=0)
+
+        Label5 = Label(self, text="만료일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label5.grid(row=7, column=0)
+
+        ExpirationVar = StringVar()
+
+        Expiration_Entry = Entry(self, width=40, textvariable=ExpirationVar)
+        Expiration_Entry.grid(row=8, column=0)
+
+        def confirm():
+            name = NameVar.get()
+            score = ScoreVar.get()
+            issue = IssueVar.get()
+            expir = ExpirationVar.get()
+
+            if len(issue)!=0 and len(expir)!=0:
+                query = """INSERT INTO Language(UserID, TestName, Score, IssueDate, Expiration)
+                VALUES(%s,%s,%s,%s,%s)
+                """
+
+                self.db.execute(query,(UserID, name, score, issue, expir))
+            elif len(issue)!=0:
+                query = """INSERT INTO Language(UserID, TestName, Score, IssueDate)
+                                VALUES(%s,%s,%s,%s)
+                                """
+
+                self.db.execute(query, (UserID, name, score, issue))
+            elif len(expir)!=0:
+                query = """INSERT INTO Language(UserID, TestName, Score, Expiration)
+                                                VALUES(%s,%s,%s,%s)
+                                                """
+
+                self.db.execute(query, (UserID, name, score, expir))
+            else:
+                query = """INSERT INTO Language(UserID, TestName, Score)
+                                                                VALUES(%s,%s,%s)
+                                                                """
+
+                self.db.execute(query, (UserID, name, score))
+            showinfo("Success", "정상적으로 추가되었습니다.")
+            controller.show_frame("MainPage")
+
+        b = Button(self, text="확인", command=confirm, width=10)
+        b.grid(row=10, column=0)
+
+class Licen(tk.Frame):
+    def __init__(self,parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("AddEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        Label2 = Label(self, text="자격증 명", width=40, height=2)
+        Label2.grid(row=1, column=0)
+
+        NameVar = StringVar()
+
+        Name_Entry = Entry(self, width=40, textvariable=NameVar)
+        Name_Entry.insert(END, "자격증 이름을 입력해주세요")
+        Name_Entry.grid(row=2, column=0)
+
+        Label3 = Label(self, text="점수(등급)", width=40, height=2)
+        Label3.grid(row=3, column=0)
+
+        ScoreVar = StringVar()
+
+        Score_Entry = Entry(self, width=40, textvariable=ScoreVar)
+        Score_Entry.insert(END, "자격증 점수(등급) 입력해주세요")
+        Score_Entry.grid(row=4, column=0)
+
+        Label4 = Label(self, text="취득일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label4.grid(row=5, column=0)
+
+        IssueVar = StringVar()
+
+        Issue_Entry = Entry(self, width=40, textvariable=IssueVar)
+        Issue_Entry.grid(row=6, column=0)
+
+        Label5 = Label(self, text="만료일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label5.grid(row=7, column=0)
+
+        ExpirationVar = StringVar()
+
+        Expiration_Entry = Entry(self, width=40, textvariable=ExpirationVar)
+        Expiration_Entry.grid(row=8, column=0)
+
+        def confirm():
+            name = NameVar.get()
+            score = ScoreVar.get()
+            issue = IssueVar.get()
+            expir = ExpirationVar.get()
+
+            if len(issue)!=0 and len(expir)!=0:
+                query = """INSERT INTO License(UserID, LicenseName, Score, IssueDate, Expiration)
+                VALUES(%s,%s,%s,%s,%s)
+                """
+
+                self.db.execute(query,(UserID, name, score, issue, expir))
+            elif len(issue)!=0:
+                query = """INSERT INTO License(UserID, LicenseName, Score, IssueDate)
+                                VALUES(%s,%s,%s,%s)
+                                """
+
+                self.db.execute(query, (UserID, name, score, issue))
+            elif len(expir)!=0:
+                query = """INSERT INTO License(UserID, LicenseName, Score, Expiration)
+                                                VALUES(%s,%s,%s,%s)
+                                                """
+
+                self.db.execute(query, (UserID, name, score, expir))
+            else:
+                query = """INSERT INTO License(UserID, LicenseName, Score)
+                                                                VALUES(%s,%s,%s)
+                                                                """
+
+                self.db.execute(query, (UserID, name, score))
+            showinfo("Success","정상적으로 추가되었습니다.")
+            controller.show_frame("MainPage")
+
+
+        b = Button(self, text="확인", command=confirm, width=10)
+        b.grid(row=10, column=0)
+
+class Intern(tk.Frame):
+    def __init__(self, parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("AddEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        Label2 = Label(self, text="직장명", width=40, height=2)
+        Label2.grid(row=1, column=0)
+
+        NameVar = StringVar()
+
+        Name_Entry = Entry(self, width=40, textvariable=NameVar)
+        Name_Entry.insert(END, "직장 이름을 입력해주세요")
+        Name_Entry.grid(row=2, column=0)
+
+        Label3 = Label(self, text="직무", width=40, height=2)
+        Label3.grid(row=3, column=0)
+
+        PosVar = StringVar()
+
+        Pos_Entry = Entry(self, width=40, textvariable=PosVar)
+        Pos_Entry.insert(END, "직무를 입력해주세요")
+        Pos_Entry.grid(row=4, column=0)
+
+        Label4 = Label(self, text="재직기간(주단위, 공란가능)", width=40, height=2)
+        Label4.grid(row=5, column=0)
+
+        LongVar = StringVar()
+
+        Long_Entry = Entry(self, width=40, textvariable=LongVar)
+        Long_Entry.grid(row=6, column=0)
+
+        def confirm():
+            name = NameVar.get()
+            pos = PosVar.get()
+            long = LongVar.get()
+
+            if len(long) != 0 :
+                query = """INSERT INTO INTERNSHIP(UserID, CompanyName, Position, HowLong)
+                VALUES(%s,%s,%s,%s)
+                """
+
+                self.db.execute(query, (UserID, name, pos, long))
+
+            else:
+                query = """INSERT INTO INTERNSHIP(UserID, CompanyName, Position)
+                VALUES(%s,%s,%s)
+                """
+                self.db.execute(query, (UserID, name, pos))
+            showinfo("Success", "정상적으로 추가되었습니다.")
+            controller.show_frame("MainPage")
+
+        b = Button(self, text="확인", command=confirm, width=10)
+        b.grid(row=10, column=0)
+
+class Cir(tk.Frame):
+    def __init__(self,parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("AddEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+        Label2 = Label(self, text="동아리/학회명", width=40, height=2)
+        Label2.grid(row=1, column=0)
+
+        NameVar = StringVar()
+
+        Name_Entry = Entry(self, width=40, textvariable=NameVar)
+        Name_Entry.insert(END, "동아리(학회) 이름을 입력해주세요")
+        Name_Entry.grid(row=2, column=0)
+
+        Label3 = Label(self, text="직책(공란가능)", width=40, height=2)
+        Label3.grid(row=3, column=0)
+
+        PosVar = StringVar()
+
+        Pos_Entry = Entry(self, width=40, textvariable=PosVar)
+        Pos_Entry.grid(row=4, column=0)
+
+        Label4 = Label(self, text="활동기간(주단위, 공란가능)", width=40, height=2)
+        Label4.grid(row=5, column=0)
+
+        LongVar = StringVar()
+
+        Long_Entry = Entry(self, width=40, textvariable=LongVar)
+        Long_Entry.grid(row=6, column=0)
+
+        def confirm():
+            name = NameVar.get()
+            pos = PosVar.get()
+            long = LongVar.get()
+
+            if len(long) != 0 and len(pos)!=0:
+                query = """INSERT INTO Circle(UserID, CircleName, Position, HowLong)
+                        VALUES(%s,%s,%s,%s)
+                        """
+
+                self.db.execute(query, (UserID, name, pos, long))
+            elif len(long)!=0:
+                query = """INSERT INTO Circle(UserID, CircleName, HowLong)
+                                        VALUES(%s,%s,%s)
+                                        """
+
+                self.db.execute(query, (UserID, name, long))
+            elif len(long)!=0:
+                query = """INSERT INTO Circle(UserID, CircleName, Position)
+                                        VALUES(%s,%s,%s)
+                                        """
+
+                self.db.execute(query, (UserID, name, pos))
+            else:
+                query = """INSERT INTO Circle(UserID, CircleName)
+                        VALUES(%s,%s)
+                        """
+                self.db.execute(query, (UserID, name))
+            showinfo("Success", "정상적으로 추가되었습니다.")
+            controller.show_frame("MainPage")
+
+        b = Button(self, text="확인", command=confirm, width=10)
+        b.grid(row=10, column=0)
 
 class Select_GroupTask_Term(tk.Frame):
     def __init__(self, parent, controller, db):
