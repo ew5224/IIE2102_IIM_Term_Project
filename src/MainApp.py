@@ -246,7 +246,7 @@ class MainApp(tk.Tk):
 
         self.frames = {}
         for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term,
-                  AddEx, Lang, Licen, Intern, Cir):
+                  AddEx, Lang, Licen, Intern, Cir, SelectGroup_forDeleteTask, SelectGroup_forDeleteTaskALL):
             page_name = F.__name__
             frame = F(parent=container, controller=self, db = db)
             self.frames[page_name] = frame
@@ -277,6 +277,8 @@ class MainPage(tk.Frame):
         b6 = Button(self, text="그룹원 찾기", command = lambda : controller.show_frame("FindUser"),width=40,height=2)
         b7 = Button(self, text="그룹 찾기", command = lambda : controller.show_frame("FindGroup"),width=40,height=2)
         b8 = Button(self, text="경력 추가하기", command = lambda : controller.show_frame("AddEx"),width=40,height=2)
+        b9 = Button(self, text="과업 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTask"),width=40,height=2)
+        b10 = Button(self, text="과업(날짜별) 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTaskALL"),width=40,height=2)
         b1.grid(row=0, column=0)
         b2.grid(row=1, column=0)
         b3.grid(row=2, column=0)
@@ -285,6 +287,8 @@ class MainPage(tk.Frame):
         b6.grid(row=5, column=0)
         b7.grid(row=6, column=0)
         b8.grid(row=7, column=0)
+        b9.grid(row=8, column=0)
+        b10.grid(row=9,column=0)
 
 class AddEx(tk.Frame):
     def __init__(self,parent, controller, db):
@@ -596,6 +600,10 @@ class Select_GroupTask_Term(tk.Frame):
         #self.title("과업 이름, 과업 시작일, 과업 종료일을 말해주세요")
         self.db = db
         #UserID = "2015147040" # 삭제 필
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
         Label1 = Label(self, text = "그룹 선택", width=40, height=2)
         Label1.grid(row=1, column=0)
         sql = """Select GroupID, GroupName From Gr0up
@@ -628,41 +636,30 @@ class Select_GroupTask_Term(tk.Frame):
         Task_Name_Entry.insert(END, "과업 이름을 입력해주세요")
         Task_Name_Entry.grid(row=4, column=0)
 
-        Label3 = Label(self, text="시작날짜", width=40, height=2)
+        Label3 = Label(self, text="과업기간", width=40, height=2)
         Label3.grid(row=5, column=0)
 
-        StartDateVar = StringVar()
+        TaskTermVar = StringVar()
 
-        StartDate_Entry = Entry(self, width=40 ,textvariable=StartDateVar)
-        StartDate_Entry.insert(END, "시작날짜를 입력해주세요(YYYY-MM-DD)")
-        StartDate_Entry.grid(row=6, column=0)
+        TaskTerm_Entry = Entry(self, width=40 ,textvariable=TaskTermVar)
+        TaskTerm_Entry.insert(END, "과업 기간을 설정해주세요.(주단위)")
+        TaskTerm_Entry.grid(row=6, column=0)
 
-        Label4 = Label(self, text="종료날짜", width=40, height=2)
-        Label4.grid(row=7, column=0)
-
-        EndDateVar = StringVar()
-
-        EndDate_Entry = Entry(self, width=40, textvariable=EndDateVar)
-        EndDate_Entry.insert(END, "종료날짜를 입력해주세요(YYYY-MM-DD)")
-        EndDate_Entry.grid(row=8, column=0)
 
         global selected_GroupID
         global CurrentTaskName
-        global selected_StartDate
-        global selected_EndDate
+        global tterm
 
         def confirm():
             #selected_GroupID = my_groups_dict[var1.get()]
             #TODO
             selected_GroupID = my_groups_dict[var1.get()]
             CurrentTaskName = TaskNameVar.get()
-            selected_StartDate = StartDateVar.get()
-            selected_EndDate = EndDateVar.get()
+            tterm = TaskTermVar.get()
             frame = Select_from_group_available(parent=parent, controller=controller, db = db ,
                                                 GID = selected_GroupID,
                                                 TName = CurrentTaskName,
-                                                StartD = selected_StartDate,
-                                                EndD = selected_EndDate)
+                                                tterm = tterm)
 
             frame.grid(row = 0, column = 0, sticky = "nsew")
             frame.tkraise()
@@ -677,7 +674,7 @@ class Select_GroupTask_Term(tk.Frame):
 
 
 class Select_from_group_available(tk.Frame):
-    def __init__(self, parent, controller,db, GID, TName,StartD, EndD):
+    def __init__(self, parent, controller,db, GID, TName,tterm):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         #self.title("원하는 과업시간을 체크해주세")
@@ -707,24 +704,27 @@ class Select_from_group_available(tk.Frame):
                     deselected.append(j)
         G_ID = GID
         T_Name = TName
-        Start_D = StartD
-        End_D = EndD
+        T_Term = tterm
+
         def getSelected():
             selected = []
             for i in range(len(boxVars)):
                 for j in range(len(boxVars[i])):
                     if boxVars[i][j].get() == 1:
-                        selected.append({'TaskDayOfWeek': i, 'TaskTime': j})
-            query = """INSERT INTO GROUP_TASK(GroupID, TaskName, TaskDayOfWeek, TaskTime, StartDate, EndDate)
-            VALUES(%s,%s,%s,%s,%s,%s)
+                        selected.append({'TaskDayOfWeek': j+1, 'TaskTime': i})
+            query = """INSERT INTO GROUP_TASK(GroupID, TaskName, TaskDayOfWeek, TaskTime, TaskTerm)
+            VALUES(%s,%s,%s,%s,%s)
             """
             for selected_dict in selected:
                 self.db.execute(query,(G_ID, T_Name, selected_dict["TaskDayOfWeek"],
-                                       selected_dict["TaskTime"],Start_D, End_D))
+                                       selected_dict["TaskTime"],T_Term))
+                print(G_ID, T_Name, selected_dict["TaskDayOfWeek"],
+                                       selected_dict["TaskTime"],T_Term)
             showinfo("Success", "정상적으로 추가되었습니다.")
             controller.show_frame("MainPage")
-
-        ExOfUnT = db.getGroupAvailableTime(G_ID, Start_D, End_D)
+        now_date = datetime.datetime.now().date().strftime("%Y-%m-%d")
+        end_date = (datetime.datetime.now() + datetime.timedelta(days=7*int(T_Term))).strftime("%Y-%m-%d")
+        ExOfUnT = db.getGroupAvailableTime(G_ID, now_date, end_date)
 
         # ExOfUnT = [{'TaskDayOfWeek': 3, 'TaskTime': 12},
         #            {'TaskDayOfWeek': 3, 'TaskTime': 13},
@@ -733,14 +733,16 @@ class Select_from_group_available(tk.Frame):
         #            {'TaskDayOfWeek': 6, 'TaskTime': 18},
         #            {'TaskDayOfWeek': 0, 'TaskTime': 6},
         #            {'TaskDayOfWeek': 4, 'TaskTime': 10}]
-
-        dayofweek = list("월 화 수 목 금 토 일".split(" "))
+        print(ExOfUnT)
+        dayofweek = list("일 월 화 수 목 금 토".split(" "))
         for x in range(rows):  # times
             boxes.append([])
             for y in range(columns):  # dayofweek
                 Label(self, text="%s" % (dayofweek[y])).grid(row=2, column=y + 1)
                 Label(self, text="%s" % (x)).grid(row=x + 3, column=0)
-                if {'TaskDayOfWeek': y, 'TaskTime': x} in ExOfUnT:
+                #print(y+1,x)
+                if {'TaskDayOfWeek': y+1, 'TaskTime': x} in ExOfUnT:
+                    #print("Disable!")
                     boxes[x].append(Checkbutton(self, state=DISABLED, background="#000000"))
                 else:
                     boxes[x].append(Checkbutton(self, variable=boxVars[x][y]))
@@ -826,7 +828,8 @@ class MakePersonalSchedule(tk.Frame):
                 showinfo("Error", "겹치는 시간이 있습니다.")
             else:
                 convert_date = datetime.datetime.strptime(date,"%Y-%m-%d").date()
-                dayofweek = convert_date.weekday()
+                dayofweek = (convert_date.weekday()+2)%8
+                print(dayofweek)
                 sql = """INSERT INTO PERSONAL_SCHEDULE(UserID, ScheduleName, ScheduleDate, ScheduleDayOfWeek, ScheduleTime)
                 values(%s,%s,%s,%s,%s)
                 """
@@ -837,6 +840,7 @@ class MakePersonalSchedule(tk.Frame):
                 controller.show_frame("MainPage")
         b2 = Button(self, text = "확인", command = validate_schedule)
         b2.grid(row = 9,column =0)
+
 class TimeTable(tk.Frame):
     def __init__(self,parent, controller, db):
         tk.Frame.__init__(self, parent)
@@ -964,7 +968,306 @@ class FindGroup(tk.Frame):
         self.db = db
         b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
                     height=2)
+        b1.grid(row=0, column=0,columnspan=2)
+
+        label = Label(self, text="그룹 이름을 검색하세요", width=40)
+        label.grid(row=1,column=0,columnspan=2)
+
+        SearchVar = StringVar()
+
+        entry = Entry(self,  width=40, textvariable=SearchVar)
+        entry.grid(row=2, column=0)
+
+        def Search():
+            sql ="""SELECT GroupID, GroupName FROM GR0UP WHERE GroupName LIKE %s and
+            GroupID NOT IN(SELECT GroupID FROM PARTICIPANT WHERE UserID=%s)"""
+
+            result = db.executeAll(sql, ("%"+SearchVar.get()+"%",UserID))
+            frame = SelectGroup_forRequest(parent=parent, controller=controller, db=db,
+                                                result = result)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+        button = Button(self, text="검색" , command = Search)
+        button.grid(row=2,column=1)
+class SelectGroup_forRequest(tk.Frame):
+    def __init__(self, parent, controller, db, result):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0,columnspan=3)
+        label1 = Label(self, text="그룹번호", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="그룹명", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="신청하기", width=8)
+        label3.grid(row=1, column=2)
+
+        i = 2
+        cnt = 0
+        groups_implement = []
+
+        def request(idx):
+            gt = result[idx]
+            sql1 = """Select * from REQUEST WHERE FromID = %s and GroupID = %s"""
+            already = db.executeAll(sql1,(UserID, gt['GroupID']))
+            if len(already)!=0:
+                showinfo("Error", "이미 신청하셨습니다.")
+            else:
+                sqlforcaptainID = """Select GroupCaptain from NoClass WHERE GroupID = %s"""
+                captainID = db.executeAll(sqlforcaptainID,(gt['GroupID']))[0]['GroupCaptain']
+
+                sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
+                db.execute(sql2,(UserID, captainID, gt['GroupID'], 0, gt['GroupName']))
+                showinfo("Success", "정상적으로 신청되었습니다.")
+
+        for group in result:
+            cnt += 1
+            item = []
+            grID = group["GroupID"]
+            grName = group["GroupName"]
+
+            item.append(Label(self, text=grID, width=8))
+            item.append(Label(self, text=grName, width=8))
+
+            self.button = Button(self, text="가입 신청하기", width=8)
+            self.button['command'] = lambda idx=cnt - 1: request(idx)
+            item.append(self.button)
+            groups_implement.append(item)
+
+        for kk in range(len(groups_implement)):
+            groups_implement[kk][0].grid(row=i, column=0)
+            groups_implement[kk][1].grid(row=i, column=1)
+            groups_implement[kk][2].grid(row=i, column=2)
+
+            i += 1
+class SelectGroup_forDeleteTask(tk.Frame):
+    def __init__(self, parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
         b1.grid(row=0, column=0)
+
+        sql = """Select GroupID, GroupName From Gr0up
+                Where GroupID IN (Select GroupId From Participant Where UserID=%s and IsCaptain=1)
+                """
+        my_groups = self.db.executeAll(sql, (UserID))
+
+        my_groups_dict = {}
+        for group in my_groups:
+            my_groups_dict[(str(group["GroupID"]) + " : " + str(group["GroupName"]))] = group["GroupID"]
+        options = ["그룹을 선택해주세요"]
+        dict_key = list(my_groups_dict.keys())
+        for i in dict_key:
+            options.append(str(i))
+
+        var1 = StringVar(self)
+        var1.set(options[0])
+
+        option_menu = OptionMenu(self, var1, *options)
+        option_menu.grid(row=2, column=0)
+
+        def Modify_Group_Task():
+            selected_GroupID = my_groups_dict[var1.get()]
+
+            frame = DeleteGroupTask(parent=parent, controller=controller, db=db,
+                                                gid = selected_GroupID)
+
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+        button = Button(self, text="확인" , command = Modify_Group_Task)
+        button.grid(row=3, column=0)
+
+class DeleteGroupTask(tk.Frame):
+    def __init__(self, parent, controller, db, gid):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        self.GroupID = gid
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("SelectGroup_forDeleteTask"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0, columnspan=3)
+
+        sql = """select GroupID, TaskName, TaskDayOfWeek, TaskTime From GROUP_TASK WHERE GroupID = %s
+        """
+
+        group_task = self.db.executeAll(sql, (self.GroupID))
+
+        label1 = Label(self, text="과업명", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="요일", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="시간", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="삭제하기", width=8)
+        label4.grid(row=1, column=3)
+
+        def delete(idx):
+            gt = group_task[idx]
+            sql = """Delete From GROUP_TASK WHERE GroupID=%s and TaskName=%s and TaskDayOfWeek=%s and TaskTime=%s"""
+            db.execute(sql,(self.GroupID, gt['TaskName'],gt['TaskDayOfWeek'],gt['TaskTime']))
+
+
+            for item in tasks_implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        tasks_implement = []
+
+        # request = [{"RequestNo" : "1", "FromID": "2015147040", "ToID":"2015147001","GroupID":1,"isInvite":"1"},
+        #            {"RequestNo" : "2", "FromID": "2015147032", "ToID":"2015147010","GroupID":2,"isInvite":"0"},
+        #            {"RequestNo" : "3", "FromID": "2015147012", "ToID":"2015147012","GroupID":3,"isInvite":"1"}]
+        # PersonName = ["황동영","김용우","조동규"]
+        # GroupNames = ["와이빅타","산정관","야이"]
+
+        for gt in group_task:
+            cnt += 1
+            item = []
+            task_name = gt["TaskName"]
+            # inviter_name = PersonName[cnt-1]
+            dayofweek_dict_inttokor = {2 : '월', 3: '화', 4: '수', 5: '목', 6: '금', 7:'토', 1: '일'}
+            dayofweek_dict_kortoint = {'월' : 2, '화' : 3, '수' : 4, '목' : 5, '금' : 6 , '토' : 7, '일' : 1}
+            task_dayofweek = dayofweek_dict_inttokor[int(gt["TaskDayOfWeek"])]
+            tasktime = gt["TaskTime"]
+            # group_name = GroupNames[cnt-1]
+
+            item.append(Label(self, text=task_name, width=8))
+            item.append(Label(self, text=task_dayofweek, width=8))
+            item.append(Label(self, text=tasktime, width=8))
+
+            self.button = Button(self, text="삭제", width=8)
+            self.button['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button)
+            tasks_implement.append(item)
+
+        for kk in range(len(tasks_implement)):
+            tasks_implement[kk][0].grid(row=i, column=0)
+            tasks_implement[kk][1].grid(row=i, column=1)
+            tasks_implement[kk][2].grid(row=i, column=2)
+            tasks_implement[kk][3].grid(row=i, column=3)
+
+            i += 1
+
+class SelectGroup_forDeleteTaskALL(tk.Frame):
+    def __init__(self, parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        sql = """Select GroupID, GroupName From Gr0up
+                Where GroupID IN (Select GroupId From Participant Where UserID=%s and IsCaptain=1)
+                """
+        my_groups = self.db.executeAll(sql, (UserID))
+
+        my_groups_dict = {}
+        for group in my_groups:
+            my_groups_dict[(str(group["GroupID"]) + " : " + str(group["GroupName"]))] = group["GroupID"]
+        options = ["그룹을 선택해주세요"]
+        dict_key = list(my_groups_dict.keys())
+        for i in dict_key:
+            options.append(str(i))
+
+        var1 = StringVar(self)
+        var1.set(options[0])
+
+        option_menu = OptionMenu(self, var1, *options)
+        option_menu.grid(row=2, column=0)
+
+        def Modify_Group_Task():
+            selected_GroupID = my_groups_dict[var1.get()]
+
+            frame = DeleteGroupTaskALL(parent=parent, controller=controller, db=db,
+                                                gid = selected_GroupID)
+
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+        button = Button(self, text="확인" , command = Modify_Group_Task)
+        button.grid(row=3, column=0)
+
+class DeleteGroupTaskALL(tk.Frame):
+    def __init__(self, parent, controller, db, gid):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        self.GroupID = gid
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("SelectGroup_forDeleteTask"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0, columnspan=3)
+
+        sql = """select GroupID, TaskName, TaskDayOfWeek, TaskTime, TaskDate From GROUP_TASK_ALL WHERE GroupID = %s
+        """
+
+        group_task_all = self.db.executeAll(sql, (self.GroupID))
+
+        label1 = Label(self, text="과업명", width=8)
+        label1.grid(row=1, column=0)
+        label5 = Label(self, text = "날짜", width = 8)
+        label5.grid(row=1, column=1)
+        label2 = Label(self, text="요일", width=8)
+        label2.grid(row=1, column=2)
+        label3 = Label(self, text="시간", width=8)
+        label3.grid(row=1, column=3)
+        label4 = Label(self, text="삭제하기", width=8)
+        label4.grid(row=1, column=4)
+
+        def delete(idx):
+            gt = group_task_all[idx]
+            sql = """Delete From GROUP_TASK_ALL WHERE GroupID=%s and TaskName=%s and TaskDayOfWeek=%s and TaskTime=%s and TaskDate = %s"""
+            db.execute(sql,(self.GroupID, gt['TaskName'],gt['TaskDayOfWeek'],gt['TaskTime'], gt['TaskDate']))
+
+
+            for item in task_all_implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        task_all_implement = []
+
+        # request = [{"RequestNo" : "1", "FromID": "2015147040", "ToID":"2015147001","GroupID":1,"isInvite":"1"},
+        #            {"RequestNo" : "2", "FromID": "2015147032", "ToID":"2015147010","GroupID":2,"isInvite":"0"},
+        #            {"RequestNo" : "3", "FromID": "2015147012", "ToID":"2015147012","GroupID":3,"isInvite":"1"}]
+        # PersonName = ["황동영","김용우","조동규"]
+        # GroupNames = ["와이빅타","산정관","야이"]
+
+        for gt in group_task_all:
+            cnt += 1
+            item = []
+            task_name = gt["TaskName"]
+            task_date = gt["TaskDate"]
+            # inviter_name = PersonName[cnt-1]
+            dayofweek_dict_inttokor = {2 : '월', 3: '화', 4: '수', 5: '목', 6: '금', 7:'토', 1: '일'}
+            dayofweek_dict_kortoint = {'월' : 2, '화' : 3, '수' : 4, '목' : 5, '금' : 6 , '토' : 7, '일' : 1}
+            task_dayofweek = dayofweek_dict_inttokor[int(gt["TaskDayOfWeek"])]
+            tasktime = gt["TaskTime"]
+            # group_name = GroupNames[cnt-1]
+
+            item.append(Label(self, text=task_name, width=8))
+            item.append(Label(self, text=task_date, width=8))
+            item.append(Label(self, text=task_dayofweek, width=8))
+            item.append(Label(self, text=tasktime, width=8))
+
+            self.button = Button(self, text="삭제", width=8)
+            self.button['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button)
+            task_all_implement.append(item)
+
+        for kk in range(len(task_all_implement)):
+            task_all_implement[kk][0].grid(row=i, column=0)
+            task_all_implement[kk][1].grid(row=i, column=1)
+            task_all_implement[kk][2].grid(row=i, column=2)
+            task_all_implement[kk][3].grid(row=i, column=3)
+            task_all_implement[kk][4].grid(row=i, column=4)
+
+            i += 1
+
 # Create the entire GUI program
 
 if __name__ == "__main__" :

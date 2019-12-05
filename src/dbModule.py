@@ -38,14 +38,14 @@ class Database():
                 Universe.append({'TaskDayOfWeek': i, 'TaskTime': j})
         sql = """select distinct TaskDayOfWeek, TaskTime
                 From Group_Schedule
-                WHERE TaskDate <= %s and TaskDate >= %s and UserID in
+                WHERE TaskDate >= %s and TaskDate <= %s and UserID in
                         (select UserID
                         from Participant
                         where GroupID = %s)
                 union
                 select distinct ScheduleDayOfWeek, ScheduleTime
                 from Personal_Schedule 
-                WHERE ScheduleDate <= %s and ScheduleDate >= %s and UserID in
+                WHERE ScheduleDate >= %s and ScheduleDate <= %s and UserID in
                         (select UserID
                         from Participant
                         where GroupID = %s)
