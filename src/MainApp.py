@@ -1717,8 +1717,12 @@ class ShowRequest(tk.Frame):
             req = request[idx]
             if int(req["isInvite"]):
                 db.execute(sql,(req["GroupID"],req["ToID"]))
+                sql = """Delete From Request WHERE RequestNo =%s"""
+                db.execute(sql, (req["RequestNo"]))
             else:
                 db.execute(sql,(req["GroupID"],req["FromID"]))
+                sql = """Delete From Request WHERE RequestNo =%s"""
+                db.execute(sql, (req["RequestNo"]))
 
             for item in requests_implement[idx]:
                 item.destroy()
