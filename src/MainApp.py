@@ -8,6 +8,7 @@ import pymysql
 import dbModule
 import datetime
 import tkinter.messagebox
+from tkinter.messagebox import askokcancel
 from tkinter.messagebox import showinfo
 
 db = pymysql.connect(host='localhost', port=3306, user='root', password='yourpasswd', db='pro', charset='utf8')
@@ -361,32 +362,86 @@ class Lang(tk.Frame):
             issue = IssueVar.get()
             expir = ExpirationVar.get()
 
-            if len(issue)!=0 and len(expir)!=0:
-                query = """INSERT INTO Language(UserID, TestName, Score, IssueDate, Expiration)
-                VALUES(%s,%s,%s,%s,%s)
-                """
+            sql = """SELECT * FROM LANGUAGE WHERE UserID=%s and TestName =%s"""
+            res = db.executeAll(sql,(UserID, name))
+            if len(res)!=0:
+                ask = askokcancel("Error","이미 해당 이름의 경력이 존재합니다. 정보를 업데이트 하시겠습니까?")
+                if ask == 1:
+                    if len(issue)!=0 and len(expir)!=0:
+                        query = """UPDATE LANGUAGE SET Score = %s, IssueDate=%s, Expiration=%s WHERE UserID=%s and TestName=%s"""
+                        try:
+                            db.execute(query,(score, issue, expir, UserID, name))
+                            showinfo("Success","정상적으로 갱신되었습니다.")
+                            controller.show_frame("MainPage")
+                        except pymysql.err.InternalError:
+                            showinfo("Error", "올바른 형식으로 입력해주세요.")
+                    elif len(issue)!=0:
+                        query = """UPDATE LANGUAGE SET Score = %s, IssueDate=%s WHERE UserID=%s and TestName=%s"""
+                        try:
+                            db.execute(query, (score, issue, UserID, name))
+                            showinfo("Success", "정상적으로 갱신되었습니다.")
+                            controller.show_frame("MainPage")
+                        except pymysql.err.InternalError:
+                            showinfo("Error", "올바른 형식으로 입력해주세요.")
+                    elif len(expir)!=0:
+                        query = """UPDATE LANGUAGE SET Score = %s, Expiration=%s WHERE UserID=%s and TestName=%s"""
+                        try:
+                            db.execute(query, (score, expir, UserID, name))
+                            showinfo("Success", "정상적으로 갱신되었습니다.")
+                            controller.show_frame("MainPage")
+                        except pymysql.err.InternalError:
+                            showinfo("Error", "올바른 형식으로 입력해주세요.")
+                    else:
+                        query = """UPDATE LANGUAGE SET Score = %s WHERE UserID=%s and TestName=%s"""
+                        try:
+                            db.execute(query, (score, UserID, name))
+                            showinfo("Success", "정상적으로 갱신되었습니다.")
+                            controller.show_frame("MainPage")
+                        except pymysql.err.InternalError:
+                            showinfo("Error", "올바른 형식으로 입력해주세요.")
 
-                self.db.execute(query,(UserID, name, score, issue, expir))
-            elif len(issue)!=0:
-                query = """INSERT INTO Language(UserID, TestName, Score, IssueDate)
-                                VALUES(%s,%s,%s,%s)
-                                """
-
-                self.db.execute(query, (UserID, name, score, issue))
-            elif len(expir)!=0:
-                query = """INSERT INTO Language(UserID, TestName, Score, Expiration)
+            else :
+                if len(issue)!=0 and len(expir)!=0:
+                    query = """INSERT INTO Language(UserID, TestName, Score, IssueDate, Expiration)
+                    VALUES(%s,%s,%s,%s,%s)
+                    """
+                    try:
+                        self.db.execute(query,(UserID, name, score, issue, expir))
+                        showinfo("Success", "정상적으로 추가되었습니다.")
+                        controller.show_frame("MainPage")
+                    except pymysql.err.InternalError:
+                        showinfo("Error", "올바른 형식으로 입력해주세요.")
+                elif len(issue)!=0:
+                    query = """INSERT INTO Language(UserID, TestName, Score, IssueDate)
+                                    VALUES(%s,%s,%s,%s)
+                                    """
+                    try:
+                        self.db.execute(query, (UserID, name, score, issue))
+                        showinfo("Success", "정상적으로 추가되었습니다.")
+                        controller.show_frame("MainPage")
+                    except pymysql.err.InternalError:
+                        showinfo("Error", "올바른 형식으로 입력해주세요.")
+                elif len(expir)!=0:
+                    query = """INSERT INTO Language(UserID, TestName, Score, Expiration)
                                                 VALUES(%s,%s,%s,%s)
                                                 """
 
-                self.db.execute(query, (UserID, name, score, expir))
-            else:
-                query = """INSERT INTO Language(UserID, TestName, Score)
-                                                                VALUES(%s,%s,%s)
+                    try :
+                        self.db.execute(query, (UserID, name, score, expir))
+                        showinfo("Success", "정상적으로 추가되었습니다.")
+                        controller.show_frame("MainPage")
+                    except pymysql.err.InternalError:
+                        showinfo("Error", "올바른 형식으로 입력해주세요.")
+                else:
+                    query = """INSERT INTO Language(UserID, TestName, Score)
+                                                                    VALUES(%s,%s,%s)
                                                                 """
-
-                self.db.execute(query, (UserID, name, score))
-            showinfo("Success", "정상적으로 추가되었습니다.")
-            controller.show_frame("MainPage")
+                    try:
+                        self.db.execute(query, (UserID, name, score))
+                        showinfo("Success", "정상적으로 추가되었습니다.")
+                        controller.show_frame("MainPage")
+                    except pymysql.err.InternalError:
+                        showinfo("Error", "올바른 형식으로 입력해주세요.")
 
         b = Button(self, text="확인", command=confirm, width=10)
         b.grid(row=10, column=0)
@@ -444,28 +499,44 @@ class Licen(tk.Frame):
                 query = """INSERT INTO License(UserID, LicenseName, Score, IssueDate, Expiration)
                 VALUES(%s,%s,%s,%s,%s)
                 """
-
-                self.db.execute(query,(UserID, name, score, issue, expir))
+                try:
+                    self.db.execute(query,(UserID, name, score, issue, expir))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
             elif len(issue)!=0:
                 query = """INSERT INTO License(UserID, LicenseName, Score, IssueDate)
                                 VALUES(%s,%s,%s,%s)
                                 """
-
-                self.db.execute(query, (UserID, name, score, issue))
+                try :
+                    self.db.execute(query, (UserID, name, score, issue))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
             elif len(expir)!=0:
                 query = """INSERT INTO License(UserID, LicenseName, Score, Expiration)
                                                 VALUES(%s,%s,%s,%s)
                                                 """
 
-                self.db.execute(query, (UserID, name, score, expir))
+                try:
+                    self.db.execute(query, (UserID, name, score, expir))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+
             else:
                 query = """INSERT INTO License(UserID, LicenseName, Score)
                                                                 VALUES(%s,%s,%s)
                                                                 """
-
-                self.db.execute(query, (UserID, name, score))
-            showinfo("Success","정상적으로 추가되었습니다.")
-            controller.show_frame("MainPage")
+                try:
+                    self.db.execute(query, (UserID, name, score))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
 
 
         b = Button(self, text="확인", command=confirm, width=10)
@@ -515,16 +586,24 @@ class Intern(tk.Frame):
                 query = """INSERT INTO INTERNSHIP(UserID, CompanyName, Position, HowLong)
                 VALUES(%s,%s,%s,%s)
                 """
-
-                self.db.execute(query, (UserID, name, pos, long))
+                try:
+                    self.db.execute(query, (UserID, name, pos, long))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
 
             else:
                 query = """INSERT INTO INTERNSHIP(UserID, CompanyName, Position)
                 VALUES(%s,%s,%s)
                 """
-                self.db.execute(query, (UserID, name, pos))
-            showinfo("Success", "정상적으로 추가되었습니다.")
-            controller.show_frame("MainPage")
+                try:
+                    self.db.execute(query, (UserID, name, pos))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+
 
         b = Button(self, text="확인", command=confirm, width=10)
         b.grid(row=10, column=0)
@@ -571,30 +650,49 @@ class Cir(tk.Frame):
                 query = """INSERT INTO Circle(UserID, CircleName, Position, HowLong)
                         VALUES(%s,%s,%s,%s)
                         """
-
-                self.db.execute(query, (UserID, name, pos, long))
+                try:
+                    self.db.execute(query, (UserID, name, pos, long))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
             elif len(long)!=0:
                 query = """INSERT INTO Circle(UserID, CircleName, HowLong)
                                         VALUES(%s,%s,%s)
                                         """
-
-                self.db.execute(query, (UserID, name, long))
+                try:
+                    self.db.execute(query, (UserID, name, long))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
             elif len(long)!=0:
                 query = """INSERT INTO Circle(UserID, CircleName, Position)
                                         VALUES(%s,%s,%s)
                                         """
+                try:
+                    self.db.execute(query, (UserID, name, pos))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
 
-                self.db.execute(query, (UserID, name, pos))
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+
             else:
                 query = """INSERT INTO Circle(UserID, CircleName)
                         VALUES(%s,%s)
                         """
-                self.db.execute(query, (UserID, name))
-            showinfo("Success", "정상적으로 추가되었습니다.")
-            controller.show_frame("MainPage")
+                try:
+                    self.db.execute(query, (UserID, name))
+                    showinfo("Success", "정상적으로 추가되었습니다.")
+                    controller.show_frame("MainPage")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+
 
         b = Button(self, text="확인", command=confirm, width=10)
         b.grid(row=10, column=0)
+
 class ManageEx(tk.Frame):
     def __init__(self, parent, controller, db):
         tk.Frame.__init__(self, parent)
@@ -608,6 +706,7 @@ class ManageEx(tk.Frame):
             sql = """SELECT * FROM LANGUAGE WHERE UserID = %s"""
             result = db.executeAll(sql,(UserID))
             frame = ManageLang(parent=parent, controller=controller, db=db, result=result)
+
             frame.grid(row=0, column=0, sticky="nsew")
             frame.tkraise()
 
@@ -643,11 +742,18 @@ class ManageEx(tk.Frame):
         b5 = Button(self, text="동아리/학회", command=show_cir, width=40, height=2)
         b5.grid(row=5, column=0)
 
+
+
+
+
 class ManageLang(tk.Frame):
     def __init__(self, parent, controller, db, result):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.db = db
+
+        controller.frames["ManageLang"] = self
+        print(controller.frames)
         b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("ManageEx"), width=40,
                     height=2)
         b1.grid(row=0, column=0)
@@ -660,8 +766,16 @@ class ManageLang(tk.Frame):
         label3.grid(row=1, column=2)
         label4 = Label(self, text="만료일", width=8)
         label4.grid(row=1, column=3)
-        label5 = Label(self, text="삭제하기", width=8)
+        label5 = Label(self, text="수정하기", width=8)
         label5.grid(row=1, column=4)
+        label6 = Label(self, text="삭제하기", width=8)
+        label6.grid(row=1, column=5)
+
+        def edit(idx):
+            ex = result[idx]
+            frame1 = NewInfo4EditLang(parent=parent, controller=controller, db=db, result=ex, prev = self)
+            frame1.grid(row=0, column=0, sticky="nsew")
+            frame1.tkraise()
 
         def delete(idx):
             ex = result[idx]
@@ -694,10 +808,12 @@ class ManageLang(tk.Frame):
             item.append(Label(self, text=score, width=8))
             item.append(Label(self, text=issue, width=8))
             item.append(Label(self, text=expir, width=8))
-
-            self.button = Button(self, text="삭제", width=8)
-            self.button['command'] = lambda idx=cnt - 1: delete(idx)
-            item.append(self.button)
+            self.button1 = Button(self, text="수정", width=8)
+            self.button1['command'] = lambda idx=cnt-1 : edit(idx)
+            self.button2 = Button(self, text="삭제", width=8)
+            self.button2['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button1)
+            item.append(self.button2)
             implement.append(item)
 
         for kk in range(len(implement)):
@@ -706,8 +822,94 @@ class ManageLang(tk.Frame):
             implement[kk][2].grid(row=i, column=2)
             implement[kk][3].grid(row=i, column=3)
             implement[kk][4].grid(row=i, column=4)
+            implement[kk][5].grid(row=i, column=5)
+
 
             i += 1
+
+class NewInfo4EditLang(tk.Frame):
+    def __init__(self, parent, controller, db, result, prev):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+
+        def back():
+            prev.tkraise()
+        b1 = Button(self, text="뒤로가기", command = back, width=40, height=2)
+        b1.grid(row=0, column=0)
+        Label01 = Label(self, text="시험명", width= 40, height=2)
+        Label01.grid(row=1,column=0)
+        Label02 = Label(self, text=result["TestName"],width=40, height=2)
+        Label02.grid(row=2,column=0)
+        Label1 = Label(self, text="점수", width=40, height=2)
+        Label1.grid(row=3, column=0)
+
+        ScoreVar = StringVar()
+
+        Score_Entry = Entry(self, width=40, textvariable=ScoreVar)
+        Score_Entry.insert(END, "시험 점수를 입력해주세요")
+        Score_Entry.grid(row=4, column=0)
+
+        Label2 = Label(self, text="취득일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label2.grid(row=5, column=0)
+
+        IssueVar = StringVar()
+
+        Issue_Entry = Entry(self, width=40, textvariable=IssueVar)
+        Issue_Entry.grid(row=6, column=0)
+
+        Label3 = Label(self, text="만료일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label3.grid(row=7, column=0)
+
+        ExpirationVar = StringVar()
+
+        Expiration_Entry = Entry(self, width=40, textvariable=ExpirationVar)
+        Expiration_Entry.grid(row=8, column=0)
+
+        def confirm():
+            score = ScoreVar.get()
+            issue = IssueVar.get()
+            expir = ExpirationVar.get()
+
+            if len(issue) != 0 and len(expir) != 0:
+                query = """UPDATE LANGUAGE SET Score = %s, IssueDate=%s, Expiration=%s WHERE UserID=%s and TestName=%s"""
+                try :
+                    db.execute(query, (score, issue, expir, UserID, result['TestName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+            elif len(issue) != 0:
+                query = """UPDATE LANGUAGE SET Score = %s, IssueDate=%s WHERE UserID=%s and TestName=%s"""
+                try:
+                    db.execute(query, (score, issue, UserID, result['TestName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+            elif len(expir) != 0:
+                query = """UPDATE LANGUAGE SET Score = %s, Expiration=%s WHERE UserID=%s and TestName=%s"""
+                try:
+                    db.execute(query, (score, expir, UserID, result['TestName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+            else:
+                query = """UPDATE LANGUAGE SET Score = %s WHERE UserID=%s and TestName=%s"""
+                try :
+                    db.execute(query, (score, UserID, result['TestName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+
+
+
+        b = Button(self, text="확인", command=confirm, width=10)
+        b.grid(row=9, column=0)
+
+
 class ManageLicen(tk.Frame):
     def __init__(self, parent, controller, db, result):
         tk.Frame.__init__(self, parent)
@@ -725,8 +927,16 @@ class ManageLicen(tk.Frame):
         label3.grid(row=1, column=2)
         label4 = Label(self, text="만료일", width=8)
         label4.grid(row=1, column=3)
-        label5 = Label(self, text="삭제하기", width=8)
+        label5 = Label(self, text="수정하기", width=8)
         label5.grid(row=1, column=4)
+        label6 = Label(self, text="삭제하기", width=8)
+        label6.grid(row=1, column=5)
+
+        def edit(idx):
+            ex = result[idx]
+            frame1 = NewInfo4EditLicen(parent=parent, controller=controller, db=db, result=ex, prev = self)
+            frame1.grid(row=0, column=0, sticky="nsew")
+            frame1.tkraise()
 
         def delete(idx):
             ex = result[idx]
@@ -758,10 +968,12 @@ class ManageLicen(tk.Frame):
             item.append(Label(self, text=score, width=8))
             item.append(Label(self, text=issue, width=8))
             item.append(Label(self, text=expir, width=8))
-
-            self.button = Button(self, text="삭제", width=8)
-            self.button['command'] = lambda idx=cnt - 1: delete(idx)
-            item.append(self.button)
+            self.button1 = Button(self, text="수정", width=8)
+            self.button1['command'] = lambda idx=cnt - 1: edit(idx)
+            self.button2 = Button(self, text="삭제", width=8)
+            self.button2['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button1)
+            item.append(self.button2)
             implement.append(item)
 
         for kk in range(len(implement)):
@@ -770,8 +982,94 @@ class ManageLicen(tk.Frame):
             implement[kk][2].grid(row=i, column=2)
             implement[kk][3].grid(row=i, column=3)
             implement[kk][4].grid(row=i, column=4)
+            implement[kk][5].grid(row=i, column=5)
 
             i += 1
+
+
+class NewInfo4EditLicen(tk.Frame):
+    def __init__(self, parent, controller, db, result, prev):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+
+        def back():
+            prev.tkraise()
+
+        b1 = Button(self, text="뒤로가기", command = back, width=40, height=2)
+        b1.grid(row=0, column=0)
+        Label01 = Label(self, text="자격증 명", width= 40, height=2)
+        Label01.grid(row=1,column=0)
+        Label02 = Label(self, text=result["LicenseName"],width=40, height=2)
+        Label02.grid(row=2,column=0)
+        Label1 = Label(self, text="점수(등급)", width=40, height=2)
+        Label1.grid(row=3, column=0)
+
+        ScoreVar = StringVar()
+
+        Score_Entry = Entry(self, width=40, textvariable=ScoreVar)
+        Score_Entry.insert(END, "자격증 점수(등급) 입력해주세요")
+        Score_Entry.grid(row=4, column=0)
+
+        Label2 = Label(self, text="취득일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label2.grid(row=5, column=0)
+
+        IssueVar = StringVar()
+
+        Issue_Entry = Entry(self, width=40, textvariable=IssueVar)
+        Issue_Entry.grid(row=6, column=0)
+
+        Label3 = Label(self, text="만료일(YYYY-MM-DD, 공란가능)", width=40, height=2)
+        Label3.grid(row=7, column=0)
+
+        ExpirationVar = StringVar()
+
+        Expiration_Entry = Entry(self, width=40, textvariable=ExpirationVar)
+        Expiration_Entry.grid(row=8, column=0)
+
+        def confirm():
+            score = ScoreVar.get()
+            issue = IssueVar.get()
+            expir = ExpirationVar.get()
+
+            if len(issue) != 0 and len(expir) != 0:
+                query = """UPDATE LICENSE SET Score = %s, IssueDate=%s, Expiration=%s WHERE UserID=%s and LicenseName=%s"""
+                try:
+                    db.execute(query, (score, issue, expir, UserID, result['LicenseName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+            elif len(issue) != 0:
+                query = """UPDATE LICENSE SET Score = %s, IssueDate=%s WHERE UserID=%s and LicenseName=%s"""
+                try:
+                    db.execute(query, (score, issue, UserID, result['LicenseName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+            elif len(expir) != 0:
+                query = """UPDATE LICENSE SET Score = %s, Expiration=%s WHERE UserID=%s and LicenseName=%s"""
+                try:
+                    db.execute(query, (score, expir, UserID, result['LicenseName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+            else:
+                query = """UPDATE LICENSE SET Score = %s WHERE UserID=%s and LicenseName=%s"""
+                try:
+                    db.execute(query, (score, UserID, result['LicenseName']))
+                    showinfo("Success", "정상적으로 갱신되었습니다.")
+                    controller.show_frame("ManageEx")
+                except pymysql.err.InternalError:
+                    showinfo("Error", "올바른 형식으로 입력해주세요.")
+
+
+
+        b = Button(self, text="확인", command=confirm, width=10)
+        b.grid(row=9, column=0)
+
 class ManageIntern(tk.Frame):
     def __init__(self, parent, controller, db, result):
         tk.Frame.__init__(self, parent)
@@ -813,9 +1111,10 @@ class ManageIntern(tk.Frame):
             item.append(Label(self, text=pos, width=8))
             item.append(Label(self, text=long, width=8))
 
-            self.button = Button(self, text="삭제", width=8)
-            self.button['command'] = lambda idx=cnt - 1: delete(idx)
-            item.append(self.button)
+            self.button2 = Button(self, text="삭제", width=8)
+            self.button2['command'] = lambda idx=cnt - 1: delete(idx)
+
+            item.append(self.button2)
             implement.append(item)
 
         for kk in range(len(implement)):
@@ -825,6 +1124,7 @@ class ManageIntern(tk.Frame):
             implement[kk][3].grid(row=i, column=3)
 
             i += 1
+
 class ManageCir(tk.Frame):
     def __init__(self, parent, controller, db, result):
         tk.Frame.__init__(self, parent)
@@ -1239,13 +1539,205 @@ class ShowRequest(tk.Frame):
 
 
 class FindUser(tk.Frame):
-    def __init__(self,parent, controller, db):
+    def __init__(self, parent, controller, db):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.db = db
         b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
                     height=2)
         b1.grid(row=0, column=0)
+
+        label = Label(self, text = "그룹 선택")
+        label.grid(row=1, column=1)
+
+        sql = """Select GroupID, GroupName From Gr0up
+                Where GroupID IN (Select GroupId From Participant Where UserID=%s and IsCaptain=1)
+                """
+        my_groups = self.db.executeAll(sql, (UserID))
+
+        my_groups_dict = {}
+        for group in my_groups:
+            my_groups_dict[(str(group["GroupID"]) + " : " + str(group["GroupName"]))] = (group["GroupID"],group["GroupName"])
+        options = ["그룹을 선택해주세요"]
+        dict_key = list(my_groups_dict.keys())
+        for i in dict_key:
+            options.append(str(i))
+
+        var1 = StringVar(self)
+        var1.set(options[0])
+
+        option_menu = OptionMenu(self, var1, *options)
+        option_menu.grid(row=2, column=0)
+
+        def go_on():
+            group = var1.get()
+            selected_GroupID = my_groups_dict[group][0]
+            selected_GroupName = my_groups_dict[group][1]
+
+            frame = SearchExperience(parent=parent, controller=controller, db=db,
+                                                gid = selected_GroupID, gname = selected_GroupName)
+
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+        button = Button(self, text="확인" , command = go_on)
+        button.grid(row=3, column=0)
+
+class SearchExperience(tk.Frame):
+    def __init__(self, parent, controller, db, gid, gname):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        self.GroupID = gid
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("FindUser"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0, columnspan=3)
+
+        label1 = Label(self, text="어학시험명(공란가능)")
+        label1.grid(row=1, column=0)
+
+        Var1 = StringVar()
+
+        Entry1 = Entry(self, width=40, textvariable=Var1)
+        Entry1.grid(row=2, column=0)
+
+        label2 = Label(self, text="자격증 명(공란가능)")
+        label2.grid(row=3, column=0)
+
+        Var2 = StringVar()
+
+        Entry2 = Entry(self, width=40, textvariable=Var2)
+        Entry2.grid(row=4, column=0)
+
+        label3 = Label(self, text="인턴회사 명(공란가능)")
+        label3.grid(row=5, column=0)
+
+        Var3 = StringVar()
+        Entry3 = Entry(self, width=40, textvariable=Var3)
+        Entry3.grid(row=6, column=0)
+
+        label4 = Label(self, text="동아리/학회 명(공란가능)")
+        label4.grid(row=7, column=0)
+
+        Var4 = StringVar()
+        Entry4 = Entry(self, width=40, textvariable=Var4)
+        Entry4.grid(row=8, column=0)
+
+        def Search():
+            search_object = [Var1.get(), Var2.get(), Var3.get(), Var4.get()]
+
+            frame = SearchMemberResult(parent = parent, controller=controller, db=db, result=search_object, prev=self, group_id = self.GroupID,
+                                       gname = gname)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        button = Button(self, text="검색", command=Search)
+        button.grid(row=9, column=0)
+
+class SearchMemberResult(tk.Frame):
+    def __init__(self, parent, controller, db, result, prev, group_id, gname):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+
+        def back():
+            prev.tkraise()
+        b1 = Button(self, text="뒤로가기", command = back, width=40, height=2)
+        b1.grid(row=0, column=0)
+
+        label1 = Label(self, text="아이디", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="이름", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="경력", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="초대하기", width=8)
+        label4.grid(row=1, column=3)
+
+        sql = """"""
+        result = db.executeAll(sql,())
+
+        i = 2
+        cnt = 0
+        users_implement = []
+
+        def request(idx):
+            member = result[idx]
+            sql1 = """Select * from REQUEST WHERE FromID = %s and GroupID = %s"""
+            already = db.executeAll(sql1, (UserID, group_id))
+            if len(already) != 0:
+                showinfo("Error", "이미 초대하셨습니다.")
+            else:
+                sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
+                db.execute(sql2, (UserID, member['UserID'], group_id, 0, gname))
+                showinfo("Success", "정상적으로 신청되었습니다.")
+
+        for member in result:
+            cnt += 1
+            item = []
+            userID = member["UserID"]
+            userName = member["Name"]
+            userExperience = member["Experience"]
+            item.append(Label(self, text=userID, width=8))
+            item.append(Label(self, text=userName, width=8))
+            item.append(Label(self, text=userExperience, width=8))
+
+            self.button = Button(self, text="초대하기", width=8)
+            self.button['command'] = lambda idx=cnt - 1: request(idx)
+            item.append(self.button)
+            users_implement.append(item)
+
+        for kk in range(len(users_implement)):
+            users_implement[kk][0].grid(row=i, column=0)
+            users_implement[kk][1].grid(row=i, column=1)
+            users_implement[kk][2].grid(row=i, column=2)
+            users_implement[kk][3].grid(row=i, column=3)
+
+            i += 1
+        ##############################################
+        i = 2
+        cnt = 0
+        groups_implement = []
+
+        def request(idx):
+            gt = result[idx]
+            sql1 = """Select * from REQUEST WHERE FromID = %s and GroupID = %s"""
+            already = db.executeAll(sql1, (UserID, group_id))
+            if len(already) != 0:
+                showinfo("Error", "이미 신청하셨습니다.")
+            else:
+                sqlforcaptainID = """Select GroupCaptain from NoClass WHERE GroupID = %s"""
+                captainID = db.executeAll(sqlforcaptainID, (gt['GroupID']))[0]['GroupCaptain']
+
+                sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
+                db.execute(sql2, (UserID, captainID, gt['GroupID'], 0, gt['GroupName']))
+                showinfo("Success", "정상적으로 신청되었습니다.")
+
+        for group in result:
+            cnt += 1
+            item = []
+            grID = group["GroupID"]
+            grName = group["GroupName"]
+
+            item.append(Label(self, text=grID, width=8))
+            item.append(Label(self, text=grName, width=8))
+
+            self.button = Button(self, text="가입 신청하기", width=8)
+            self.button['command'] = lambda idx=cnt - 1: request(idx)
+            item.append(self.button)
+            groups_implement.append(item)
+
+        for kk in range(len(groups_implement)):
+            groups_implement[kk][0].grid(row=i, column=0)
+            groups_implement[kk][1].grid(row=i, column=1)
+            groups_implement[kk][2].grid(row=i, column=2)
+
+            i += 1
+
+
+
+
+
+
 
 class FindGroup(tk.Frame):
     def __init__(self,parent, controller, db):
@@ -1390,8 +1882,9 @@ class DeleteGroupTask(tk.Frame):
         label2.grid(row=1, column=1)
         label3 = Label(self, text="시간", width=8)
         label3.grid(row=1, column=2)
-        label4 = Label(self, text="삭제하기", width=8)
-        label4.grid(row=1, column=3)
+
+        label5 = Label(self, text="삭제하기", width=8)
+        label5.grid(row=1, column=3)
 
         def delete(idx):
             gt = group_task[idx]
