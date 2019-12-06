@@ -758,7 +758,7 @@ class ManageLang(tk.Frame):
         self.db = db
 
         controller.frames["ManageLang"] = self
-        print(controller.frames)
+        #print(controller.frames)
         b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("ManageEx"), width=40,
                     height=2)
         b1.grid(row=0, column=0)
