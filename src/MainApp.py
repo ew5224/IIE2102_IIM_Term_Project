@@ -8,6 +8,7 @@ import pymysql
 import dbModule
 import datetime
 import tkinter.messagebox
+from datetime import timedelta
 from tkinter.messagebox import askokcancel
 from tkinter.messagebox import showinfo
 import matplotlib.pyplot as plt
@@ -1462,22 +1463,32 @@ class ShowTable(tk.Frame):
                     height=2)
         b1.grid(row=0, column=0)
 
-        # DB
-        sql = """select *
-        From Personal_Schedule
-        WHERE UserID = %s AND ScheduleDayOfWeek = %s
-        """
         current_date = datetime.datetime.today()
         week = current_date.isocalendar()[1]
 
-        personal_fetch = db.executeAll(sql, (UserID, week))
+        a = timedelta(days=1)
+        b = current_date.weekday()
+        date = datetime.datetime(current_date.year, current_date.month, current_date.day)
+
+        startdate = date - a * b
+        enddate = date + a * (6 - b)
+
+        start = startdate.strftime("%Y-%m-%d")
+        end = enddate.strftime("%Y-%m-%d")
+        # DB
+        sql = """select *
+        From Personal_Schedule
+        WHERE UserID = %s AND ScheduleDate >= %s AND ScheduleDate <= %s
+        """
+
+        personal_fetch = db.executeAll(sql, (UserID, start, end))
 
         sql = """select *
         From group_Schedule
-        WHERE UserID = %s AND TaskDayOfWeek = %s
+        WHERE UserID = %s AND TaskDate >= %s AND TaskDate <= %s
         """
 
-        group_fetch = db.executeAll(sql, (UserID, week))
+        group_fetch = db.executeAll(sql, (UserID, start, end))
 
         group_list = []
         for row in group_fetch:
@@ -1491,7 +1502,7 @@ class ShowTable(tk.Frame):
         dic.extend(personal_fetch)
         dic.extend(group_list)
 
-        mpl.rc('font', family='Apple Gothic')  # Mac의 경우는 AppleGothic, 윈도우의 경우는 Malgun Gothic을 사용하면 됩니다 :)
+        mpl.rc('font', family='DejaVu Sans')  # Mac의 경우는 AppleGothic, 윈도우의 경우는 Malgun Gothic을 사용하면 됩니다 :)
         mpl.rc('axes', unicode_minus=False)
 
         fig, ax = plt.subplots()
@@ -1512,9 +1523,9 @@ class ShowTable(tk.Frame):
         # Setting Axis x for WeekDays
 
         ax.set_xlim(0, 7.5)
-        ax.set_ylim(0, 24)
-        ax.set_yticks(range(0, 24))
-        ax.set_yticklabels(range(0, 24))
+        ax.set_ylim(24, -1)
+        ax.set_yticks(range(24, -1, -1))
+        ax.set_yticklabels(range(24, -1, -1))
 
         ax.yaxis.grid()
         ax.set_xticks([i + 0.5 for i in range(0, 8)])
@@ -1537,11 +1548,13 @@ class ShowTable(tk.Frame):
             # will be used to measure X
             weekday = dt.weekday() + 0.5
 
-            start = row["ScheduleTime"]
-            ax.fill_between([weekday - 0.4, weekday + 0.4], [start, start], [start + 1, start + 1], color=colors[j],
-                            edgecolor='k', linewidth=0.5)
+            p = j % 5
 
-            ax.text(weekday, start + 0.5, name, va="top", fontsize=15)
+            start = row["ScheduleTime"]
+            ax.fill_between([weekday - 0.4, weekday + 0.4], [start, start], [start + 1, start + 1], color=colors[p],
+                            edgecolor='k', linewidth=0.5)
+            nlen = len(name)
+            ax.text(weekday-nlen*0.03,start+0.25, name, va="top", fontsize = 10)
 
         chart_type = FigureCanvasTkAgg(fig, self)
         chart_type.get_tk_widget().grid(row=1, column=0)
@@ -1780,7 +1793,7 @@ class FindUser(tk.Frame):
         b1.grid(row=0, column=0)
 
         label = Label(self, text = "그룹 선택")
-        label.grid(row=1, column=1)
+        label.grid(row=1, column=0)
 
         sql = """Select GroupID, GroupName From Gr0up
                 Where GroupID IN (Select GroupId From Participant Where UserID=%s and IsCaptain=1)
@@ -1874,26 +1887,29 @@ class SearchMemberResult(tk.Frame):
         def back():
             prev.tkraise()
         b1 = Button(self, text="뒤로가기", command = back, width=40, height=2)
-        b1.grid(row=0, column=0)
+        b1.grid(row=0, column=0,columnspan=3)
 
         label1 = Label(self, text="아이디", width=8)
         label1.grid(row=1, column=0)
         label2 = Label(self, text="이름", width=8)
         label2.grid(row=1, column=1)
-        label3 = Label(self, text="경력", width=8)
+        label3 = Label(self, text="경력", width=30)
         label3.grid(row=1, column=2)
         label4 = Label(self, text="초대하기", width=8)
         label4.grid(row=1, column=3)
+        print(result)
+        sql = """SELECT USERS.UserID, Name, career_check(USERS.UserID,%s,%s,%s,%s) AS Experience
+        FROM USERS WHERE USERS.UserID Not in(SELECT UserID From Participant WHERE GroupID = %s)
+        and USERS.UserID <> %s and career_check(USERS.UserID,%s,%s,%s,%s) <> ' /  /  / ';"""
 
-        sql = """"""
-        result = db.executeAll(sql,())
+        res = db.executeAll(sql,(result[0],result[1],result[2],result[3],group_id, UserID,result[0],result[1],result[2],result[3]))
 
         i = 2
         cnt = 0
         users_implement = []
 
         def request(idx):
-            member = result[idx]
+            member = res[idx]
             sql1 = """Select * from REQUEST WHERE FromID = %s and GroupID = %s"""
             already = db.executeAll(sql1, (UserID, group_id))
             if len(already) != 0:
@@ -1901,9 +1917,9 @@ class SearchMemberResult(tk.Frame):
             else:
                 sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
                 db.execute(sql2, (UserID, member['UserID'], group_id, 0, gname))
-                showinfo("Success", "정상적으로 신청되었습니다.")
+                showinfo("Success", "정상적으로 초대되었습니다.")
 
-        for member in result:
+        for member in res:
             cnt += 1
             item = []
             userID = member["UserID"]
@@ -1911,7 +1927,7 @@ class SearchMemberResult(tk.Frame):
             userExperience = member["Experience"]
             item.append(Label(self, text=userID, width=8))
             item.append(Label(self, text=userName, width=8))
-            item.append(Label(self, text=userExperience, width=8))
+            item.append(Label(self, text=userExperience, width=30))
 
             self.button = Button(self, text="초대하기", width=8)
             self.button['command'] = lambda idx=cnt - 1: request(idx)
@@ -1925,51 +1941,6 @@ class SearchMemberResult(tk.Frame):
             users_implement[kk][3].grid(row=i, column=3)
 
             i += 1
-        ##############################################
-        i = 2
-        cnt = 0
-        groups_implement = []
-
-        def request(idx):
-            gt = result[idx]
-            sql1 = """Select * from REQUEST WHERE FromID = %s and GroupID = %s"""
-            already = db.executeAll(sql1, (UserID, group_id))
-            if len(already) != 0:
-                showinfo("Error", "이미 신청하셨습니다.")
-            else:
-                sqlforcaptainID = """Select GroupCaptain from NoClass WHERE GroupID = %s"""
-                captainID = db.executeAll(sqlforcaptainID, (gt['GroupID']))[0]['GroupCaptain']
-
-                sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
-                db.execute(sql2, (UserID, captainID, gt['GroupID'], 0, gt['GroupName']))
-                showinfo("Success", "정상적으로 신청되었습니다.")
-
-        for group in result:
-            cnt += 1
-            item = []
-            grID = group["GroupID"]
-            grName = group["GroupName"]
-
-            item.append(Label(self, text=grID, width=8))
-            item.append(Label(self, text=grName, width=8))
-
-            self.button = Button(self, text="가입 신청하기", width=8)
-            self.button['command'] = lambda idx=cnt - 1: request(idx)
-            item.append(self.button)
-            groups_implement.append(item)
-
-        for kk in range(len(groups_implement)):
-            groups_implement[kk][0].grid(row=i, column=0)
-            groups_implement[kk][1].grid(row=i, column=1)
-            groups_implement[kk][2].grid(row=i, column=2)
-
-            i += 1
-
-
-
-
-
-
 
 class FindGroup(tk.Frame):
     def __init__(self,parent, controller, db):
@@ -2028,7 +1999,10 @@ class SelectGroup_forRequest(tk.Frame):
                 showinfo("Error", "이미 신청하셨습니다.")
             else:
                 sqlforcaptainID = """Select GroupCaptain from NoClass WHERE GroupID = %s"""
-                captainID = db.executeAll(sqlforcaptainID,(gt['GroupID']))[0]['GroupCaptain']
+
+                captainID = db.executeAll(sqlforcaptainID,(gt['GroupID']))
+                print(captainID)
+                captainID = captainID[0]['GroupCaptain']
 
                 sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
                 db.execute(sql2,(UserID, captainID, gt['GroupID'], 0, gt['GroupName']))

@@ -33,22 +33,32 @@ class ShowTable(tk.Frame):
                     height=2)
         b1.grid(row=0, column=0)
 
-        # DB
-        sql = """select *
-        From Personal_Schedule
-        WHERE UserID = %s AND ScheduleDayOfWeek = %s
-        """
         current_date = datetime.datetime.today()
         week = current_date.isocalendar()[1]
 
-        personal_fetch = db.executeAll(sql, (UserID, week))
+        a = timedelta(days=1)
+        b = current_date.weekday()
+        date = datetime.datetime(current_date.year, current_date.month, current_date.day)
+
+        startdate = date - a * b
+        enddate = date + a * (6 - b)
+
+        start = startdate.strftime("%Y-%m-%d")
+        end = enddate.strftime("%Y-%m-%d")
+        # DB
+        sql = """select *
+        From Personal_Schedule
+        WHERE UserID = %s AND ScheduleDate >= %s AND ScheduleDate <= %s
+        """
+
+        personal_fetch = db.executeAll(sql, (UserID, start, end))
 
         sql = """select *
         From group_Schedule
-        WHERE UserID = %s AND TaskDayOfWeek = %s
+        WHERE UserID = %s AND TaskDate >= %s AND TaskDate <= %s
         """
 
-        group_fetch = db.executeAll(sql, (UserID, week))
+        group_fetch = db.executeAll(sql, (UserID, start, end))
 
         group_list = []
         for row in group_fetch:

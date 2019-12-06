@@ -13,7 +13,6 @@ class Database():
         self.cursor= self.db.cursor(pymysql.cursors.DictCursor)
 
 
-
     def logcheck(self,id,password):
         sql = "select Name from USERS WHERE UserID=%s AND PW = %s"
         result = self.cursor.execute(sql,(id,password))
@@ -55,21 +54,6 @@ class Database():
         unavailable = self.cursor.fetchall()
 
         return unavailable
-
-
-
-    def getdata (self):
-        sql= """select work.Title, artist.LastName, trans.AcquisitionPrice, trans.TransactionID
-                from work, artist, trans
-                where trans.WorkID = work.WorkID and work.ArtistID = artist.ArtistID AND trans.CustomerID is null"""
-        num=self.cursor.execute(sql)
-        data = self.cursor.fetchall()
-        return num, data
-
-    def update_work(self,TransactionID,CustomerID,DateSold,SalesPrice):
-        sql= "UPDATE trans SET DateSold=%s, SalesPrice=%s, CustomerID = %s WHERE TransactionID =%s ;"
-        result = self.cursor.execute(sql,(DateSold, SalesPrice, CustomerID, TransactionID))
-        self.db.commit()
 
 
     def executeOne(self, query, args={}):
