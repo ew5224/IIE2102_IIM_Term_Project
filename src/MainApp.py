@@ -224,9 +224,6 @@ def main_account_screen():
 
     main_screen.mainloop()
 
-def raise_frame(frame):
-    frame.tkraise()
-
 class MainApp(tk.Tk):
     def __init__(self, db, ID, Name, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
