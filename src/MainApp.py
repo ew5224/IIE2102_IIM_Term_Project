@@ -246,7 +246,7 @@ class MainApp(tk.Tk):
 
         self.frames = {}
         for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term,
-                  AddEx, Lang, Licen, Intern, Cir, SelectGroup_forDeleteTask, SelectGroup_forDeleteTaskALL):
+                  AddEx, Lang, Licen, Intern, Cir, SelectGroup_forDeleteTask, SelectGroup_forDeleteTaskALL, ManageEx):
             page_name = F.__name__
             frame = F(parent=container, controller=self, db = db)
             self.frames[page_name] = frame
@@ -268,7 +268,7 @@ class MainPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.db = db
-
+        welcome = Label(self, text="{}님 환영합니다.".format(UserName),width=40)
         b1 = Button(self, text="내 시간표 보기", command = lambda :  controller.show_frame("TimeTable"),width=40,height=2)
         b2 = Button(self, text="일정보기(리스트)", command = lambda : controller.show_frame("ScheduleList"),width=40,height=2)
         b3 = Button(self, text="개인 일정 생성", command = lambda : controller.show_frame("MakePersonalSchedule"), width=40, height=2)
@@ -277,18 +277,21 @@ class MainPage(tk.Frame):
         b6 = Button(self, text="그룹원 찾기", command = lambda : controller.show_frame("FindUser"),width=40,height=2)
         b7 = Button(self, text="그룹 찾기", command = lambda : controller.show_frame("FindGroup"),width=40,height=2)
         b8 = Button(self, text="경력 추가하기", command = lambda : controller.show_frame("AddEx"),width=40,height=2)
-        b9 = Button(self, text="과업 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTask"),width=40,height=2)
-        b10 = Button(self, text="과업(날짜별) 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTaskALL"),width=40,height=2)
-        b1.grid(row=0, column=0)
-        b2.grid(row=1, column=0)
-        b3.grid(row=2, column=0)
-        b4.grid(row=3, column=0)
-        b5.grid(row=4, column=0)
-        b6.grid(row=5, column=0)
-        b7.grid(row=6, column=0)
-        b8.grid(row=7, column=0)
-        b9.grid(row=8, column=0)
-        b10.grid(row=9,column=0)
+        b9 = Button(self, text="경력 관리하기", command = lambda : controller.show_frame("ManageEx"),width=40,height=2)
+        b10 = Button(self, text="과업 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTask"),width=40,height=2)
+        b11 = Button(self, text="과업(날짜별) 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTaskALL"),width=40,height=2)
+        welcome.grid(row=0,column=0)
+        b1.grid(row=1, column=0)
+        b2.grid(row=2, column=0)
+        b3.grid(row=3, column=0)
+        b4.grid(row=4, column=0)
+        b5.grid(row=5, column=0)
+        b6.grid(row=6, column=0)
+        b7.grid(row=7, column=0)
+        b8.grid(row=8, column=0)
+        b9.grid(row=9, column=0)
+        b10.grid(row=10,column=0)
+        b11.grid(row=11,column=0)
 
 class AddEx(tk.Frame):
     def __init__(self,parent, controller, db):
@@ -592,7 +595,289 @@ class Cir(tk.Frame):
 
         b = Button(self, text="확인", command=confirm, width=10)
         b.grid(row=10, column=0)
+class ManageEx(tk.Frame):
+    def __init__(self, parent, controller, db):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("MainPage"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
 
+        def show_lang():
+            sql = """SELECT * FROM LANGUAGE WHERE UserID = %s"""
+            result = db.executeAll(sql,(UserID))
+            frame = ManageLang(parent=parent, controller=controller, db=db, result=result)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        def show_licen():
+            sql = """SELECT * FROM LICENSE WHERE UserID = %s"""
+            result = db.executeAll(sql, (UserID))
+            frame = ManageLicen(parent=parent, controller=controller, db=db, result=result)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        def show_intern():
+            sql = """SELECT * FROM INTERNSHIP WHERE UserID = %s"""
+            result = db.executeAll(sql, (UserID))
+            frame = ManageIntern(parent=parent, controller=controller, db=db, result=result)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        def show_cir():
+            sql = """SELECT * FROM CIRCLE WHERE UserID = %s"""
+            result = db.executeAll(sql, (UserID))
+            frame = ManageCir(parent=parent, controller=controller, db=db, result=result)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        label = Label(self, text="경력 종류를 선택해주세요", width=40, height=2)
+        label.grid(row=1, column=0)
+        b2 = Button(self, text="어학", command=show_lang, width=40, height=2)
+        b2.grid(row=2, column=0)
+        b3 = Button(self, text="자격증", command=show_licen, width=40, height=2)
+        b3.grid(row=3, column=0)
+        b4 = Button(self, text="인턴십", command=show_intern, width=40, height=2)
+        b4.grid(row=4, column=0)
+        b5 = Button(self, text="동아리/학회", command=show_cir, width=40, height=2)
+        b5.grid(row=5, column=0)
+
+class ManageLang(tk.Frame):
+    def __init__(self, parent, controller, db, result):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("ManageEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        label1 = Label(self, text="시험명", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="점수", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="취득일", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="만료일", width=8)
+        label4.grid(row=1, column=3)
+        label5 = Label(self, text="삭제하기", width=8)
+        label5.grid(row=1, column=4)
+
+        def delete(idx):
+            ex = result[idx]
+            sql = """Delete From Language WHERE UserID=%s and TestName = %s"""
+            db.execute(sql,(UserID, ex['TestName']))
+
+
+            for item in implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        implement = []
+
+        # request = [{"RequestNo" : "1", "FromID": "2015147040", "ToID":"2015147001","GroupID":1,"isInvite":"1"},
+        #            {"RequestNo" : "2", "FromID": "2015147032", "ToID":"2015147010","GroupID":2,"isInvite":"0"},
+        #            {"RequestNo" : "3", "FromID": "2015147012", "ToID":"2015147012","GroupID":3,"isInvite":"1"}]
+        # PersonName = ["황동영","김용우","조동규"]
+        # GroupNames = ["와이빅타","산정관","야이"]
+
+        for ex in result:
+            cnt += 1
+            item = []
+            name = ex["TestName"]
+            score = ex["Score"]
+            issue = ex["IssueDate"]
+            expir = ex["Expiration"]
+
+            item.append(Label(self, text=name, width=8))
+            item.append(Label(self, text=score, width=8))
+            item.append(Label(self, text=issue, width=8))
+            item.append(Label(self, text=expir, width=8))
+
+            self.button = Button(self, text="삭제", width=8)
+            self.button['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button)
+            implement.append(item)
+
+        for kk in range(len(implement)):
+            implement[kk][0].grid(row=i, column=0)
+            implement[kk][1].grid(row=i, column=1)
+            implement[kk][2].grid(row=i, column=2)
+            implement[kk][3].grid(row=i, column=3)
+            implement[kk][4].grid(row=i, column=4)
+
+            i += 1
+class ManageLicen(tk.Frame):
+    def __init__(self, parent, controller, db, result):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("ManageEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        label1 = Label(self, text="시험명", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="점수", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="취득일", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="만료일", width=8)
+        label4.grid(row=1, column=3)
+        label5 = Label(self, text="삭제하기", width=8)
+        label5.grid(row=1, column=4)
+
+        def delete(idx):
+            ex = result[idx]
+            sql = """Delete From License WHERE UserID=%s and LicenseName = %s"""
+            db.execute(sql, (UserID, ex['LicenseName']))
+
+            for item in implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        implement = []
+
+        # request = [{"RequestNo" : "1", "FromID": "2015147040", "ToID":"2015147001","GroupID":1,"isInvite":"1"},
+        #            {"RequestNo" : "2", "FromID": "2015147032", "ToID":"2015147010","GroupID":2,"isInvite":"0"},
+        #            {"RequestNo" : "3", "FromID": "2015147012", "ToID":"2015147012","GroupID":3,"isInvite":"1"}]
+        # PersonName = ["황동영","김용우","조동규"]
+        # GroupNames = ["와이빅타","산정관","야이"]
+
+        for ex in result:
+            cnt += 1
+            item = []
+            name = ex["LicenseName"]
+            score = ex["Score"]
+            issue = ex["IssueDate"]
+            expir = ex["Expiration"]
+
+            item.append(Label(self, text=name, width=8))
+            item.append(Label(self, text=score, width=8))
+            item.append(Label(self, text=issue, width=8))
+            item.append(Label(self, text=expir, width=8))
+
+            self.button = Button(self, text="삭제", width=8)
+            self.button['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button)
+            implement.append(item)
+
+        for kk in range(len(implement)):
+            implement[kk][0].grid(row=i, column=0)
+            implement[kk][1].grid(row=i, column=1)
+            implement[kk][2].grid(row=i, column=2)
+            implement[kk][3].grid(row=i, column=3)
+            implement[kk][4].grid(row=i, column=4)
+
+            i += 1
+class ManageIntern(tk.Frame):
+    def __init__(self, parent, controller, db, result):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("ManageEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        label1 = Label(self, text="회사명", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="직무", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="재직기간", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="삭제하기", width=8)
+        label4.grid(row=1, column=3)
+
+        def delete(idx):
+            ex = result[idx]
+            sql = """Delete From Internship WHERE UserID=%s and CompanyName = %s"""
+            db.execute(sql, (UserID, ex['CompanyName']))
+
+            for item in implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        implement = []
+
+        for ex in result:
+            cnt += 1
+            item = []
+            name = ex["CompanyName"]
+            pos = ex["Position"]
+            long = ex["HowLong"]
+
+            item.append(Label(self, text=name, width=8))
+            item.append(Label(self, text=pos, width=8))
+            item.append(Label(self, text=long, width=8))
+
+            self.button = Button(self, text="삭제", width=8)
+            self.button['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button)
+            implement.append(item)
+
+        for kk in range(len(implement)):
+            implement[kk][0].grid(row=i, column=0)
+            implement[kk][1].grid(row=i, column=1)
+            implement[kk][2].grid(row=i, column=2)
+            implement[kk][3].grid(row=i, column=3)
+
+            i += 1
+class ManageCir(tk.Frame):
+    def __init__(self, parent, controller, db, result):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.db = db
+        b1 = Button(self, text="뒤로가기", command=lambda: controller.show_frame("ManageEx"), width=40,
+                    height=2)
+        b1.grid(row=0, column=0)
+
+        label1 = Label(self, text="회사명", width=8)
+        label1.grid(row=1, column=0)
+        label2 = Label(self, text="직무", width=8)
+        label2.grid(row=1, column=1)
+        label3 = Label(self, text="재직기간", width=8)
+        label3.grid(row=1, column=2)
+        label4 = Label(self, text="삭제하기", width=8)
+        label4.grid(row=1, column=3)
+
+        def delete(idx):
+            ex = result[idx]
+            sql = """Delete From Internship WHERE UserID=%s and CircleName = %s"""
+            db.execute(sql, (UserID, ex['CircleName']))
+
+            for item in implement[idx]:
+                item.destroy()
+
+        i = 2
+        cnt = 0
+        implement = []
+
+        for ex in result:
+            cnt += 1
+            item = []
+            name = ex["CircleName"]
+            pos = ex["Position"]
+            long = ex["HowLong"]
+
+            item.append(Label(self, text=name, width=8))
+            item.append(Label(self, text=pos, width=8))
+            item.append(Label(self, text=long, width=8))
+
+            self.button = Button(self, text="삭제", width=8)
+            self.button['command'] = lambda idx=cnt - 1: delete(idx)
+            item.append(self.button)
+            implement.append(item)
+
+        for kk in range(len(implement)):
+            implement[kk][0].grid(row=i, column=0)
+            implement[kk][1].grid(row=i, column=1)
+            implement[kk][2].grid(row=i, column=2)
+            implement[kk][3].grid(row=i, column=3)
+
+            i += 1
 class Select_GroupTask_Term(tk.Frame):
     def __init__(self, parent, controller, db):
         tk.Frame.__init__(self, parent)
@@ -895,6 +1180,7 @@ class ShowRequest(tk.Frame):
 
             for item in requests_implement[idx]:
                 item.destroy()
+
         def refuse(idx):
             req = request[idx]
             sql = """Delete From Request WHERE RequestNo =%s"""
@@ -989,6 +1275,7 @@ class FindGroup(tk.Frame):
             frame.tkraise()
         button = Button(self, text="검색" , command = Search)
         button.grid(row=2,column=1)
+
 class SelectGroup_forRequest(tk.Frame):
     def __init__(self, parent, controller, db, result):
         tk.Frame.__init__(self, parent)
