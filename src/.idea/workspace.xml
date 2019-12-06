@@ -4,7 +4,6 @@
     <list default="true" id="906243e6-904b-4bff-9ad0-52d0a51cd4d9" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/MainApp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dbModule.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbModule.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -110,7 +109,7 @@
       <workItem from="1575267063865" duration="6200000" />
       <workItem from="1575384312391" duration="5685000" />
       <workItem from="1575439287165" duration="12499000" />
-      <workItem from="1575590636598" duration="16119000" />
+      <workItem from="1575590636598" duration="18201000" />
     </task>
     <servers />
   </component>
@@ -132,6 +131,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/src$YongwooApp.coverage" NAME="YongwooApp Coverage Results" MODIFIED="1575270850500" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/src$MainApp.coverage" NAME="MainApp Coverage Results" MODIFIED="1575627061660" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/src$MainApp.coverage" NAME="MainApp Coverage Results" MODIFIED="1575629731808" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
