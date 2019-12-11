@@ -47,7 +47,7 @@ def register():
     major = StringVar()
     email = StringVar()
 
-    Label(register_screen, text="계정등록", font=('맑은 고딕', 15)).pack()
+    Label(register_screen, text="계정등록", font=('AppleGothic', 15)).pack()
     Label(register_screen, text="").pack()
 
     username_lable = Label(register_screen, text="ID")
@@ -228,7 +228,7 @@ class MainApp(tk.Tk):
     def __init__(self, db, ID, Name, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title("Linked Schedule")
-        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        self.title_font = tkfont.Font(family='AppleGothic', size=18, weight="bold", slant="italic")
 
         global UserID
         global UserName
@@ -1499,7 +1499,7 @@ class ShowTable(tk.Frame):
         dic.extend(personal_fetch)
         dic.extend(group_list)
 
-        mpl.rc('font', family='DejaVu Sans')  # Mac의 경우는 AppleGothic, 윈도우의 경우는 Malgun Gothic을 사용하면 됩니다 :)
+        mpl.rc('font', family='AppleGothic')  # Mac의 경우는 AppleGothic, 윈도우의 경우는 Malgun Gothic을 사용하면 됩니다 :)
         mpl.rc('axes', unicode_minus=False)
 
         fig, ax = plt.subplots()
