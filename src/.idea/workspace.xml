@@ -111,8 +111,17 @@
       <workItem from="1575439287165" duration="12499000" />
       <workItem from="1575590636598" duration="22874000" />
       <workItem from="1575639586009" duration="248000" />
-      <workItem from="1576046462906" duration="119000" />
+      <workItem from="1576046462906" duration="276000" />
+      <workItem from="1576227252270" duration="4047000" />
     </task>
+    <task id="LOCAL-00001" summary="font changed">
+      <created>1576046666527</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1576046666527</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -131,8 +140,12 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="font changed" />
+    <option name="LAST_COMMIT_MESSAGE" value="font changed" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/src$YongwooApp.coverage" NAME="YongwooApp Coverage Results" MODIFIED="1575270850500" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/src$MainApp.coverage" NAME="MainApp Coverage Results" MODIFIED="1576046583559" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/src$MainApp.coverage" NAME="MainApp Coverage Results" MODIFIED="1576233583912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

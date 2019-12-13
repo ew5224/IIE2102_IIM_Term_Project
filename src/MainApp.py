@@ -247,8 +247,9 @@ class MainApp(tk.Tk):
 
 
         self.frames = {}
-        for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindUser, FindGroup, Select_GroupTask_Term,
-                  AddEx, Lang, Licen, Intern, Cir, SelectGroup_forDeleteTask, SelectGroup_forDeleteTaskALL, ManageEx,AddClasses,MakeGroup):
+        for F in (MainPage, TimeTable, ScheduleList, MakePersonalSchedule, ShowRequest, FindGroup, Select_GroupTask_Term, FindUser,
+                  SelectGroup_forDeleteTaskALL,SelectGroup_forDeleteTask,
+                  AddEx, Lang, Licen, Intern, Cir, ManageEx,AddClasses,MakeGroup):
             page_name = F.__name__
             frame = F(parent=container, controller=self, db = db)
             self.frames[page_name] = frame
@@ -271,17 +272,38 @@ class MainPage(tk.Frame):
         self.controller = controller
         self.db = db
         welcome = Label(self, text="{}님 환영합니다.".format(UserName),width=40)
+
+        def GroupScheduleBuild(parent, controller, db):
+            frame = Select_GroupTask_Term(parent=parent, controller=controller, db = db)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        def FU(parent, controller, db):
+            frame = FindUser(parent=parent, controller=controller, db=db)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        def DeleteTask(parent, controller, db):
+            frame = SelectGroup_forDeleteTask(parent=parent, controller=controller, db=db)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
+        def DeleteTaskALL(parent, controller, db):
+            frame = SelectGroup_forDeleteTaskALL(parent=parent, controller=controller, db=db)
+            frame.grid(row=0, column=0, sticky="nsew")
+            frame.tkraise()
+
         b1 = Button(self, text="내 시간표 보기", command = lambda :  controller.show_frame("TimeTable"),width=40,height=2)
         b2 = Button(self, text="일정보기(리스트)", command = lambda : controller.show_frame("ScheduleList"),width=40,height=2)
         b3 = Button(self, text="개인 일정 생성", command = lambda : controller.show_frame("MakePersonalSchedule"), width=40, height=2)
-        b4 = Button(self, text="그룹 일정 생성", command = lambda : controller.show_frame("Select_GroupTask_Term"),width=40,height=2)
+        b4 = Button(self, text="그룹 일정 생성", command = lambda : GroupScheduleBuild(parent, controller, db), width=40,height=2)
         b5 = Button(self, text="받은 초대 확인", command = lambda : controller.show_frame("ShowRequest"),width=40,height=2)
-        b6 = Button(self, text="그룹원 찾기", command = lambda : controller.show_frame("FindUser"),width=40,height=2)
+        b6 = Button(self, text="그룹원 찾기", command = lambda : FU(parent, controller, db), width=40,height=2)
         b7 = Button(self, text="그룹 찾기", command = lambda : controller.show_frame("FindGroup"),width=40,height=2)
         b8 = Button(self, text="경력 추가하기", command = lambda : controller.show_frame("AddEx"),width=40,height=2)
         b9 = Button(self, text="경력 관리하기", command = lambda : controller.show_frame("ManageEx"),width=40,height=2)
-        b10 = Button(self, text="과업 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTask"),width=40,height=2)
-        b11 = Button(self, text="과업(날짜별) 관리하기", command = lambda : controller.show_frame("SelectGroup_forDeleteTaskALL"),width=40,height=2)
+        b10 = Button(self, text="과업 관리하기", command = lambda :DeleteTask(parent, controller, db),width=40,height=2)
+        b11 = Button(self, text="과업(날짜별) 관리하기", command = lambda :DeleteTaskALL(parent, controller, db), width=40,height=2)
         b12 = Button(self, text="수업 추가하기", command = lambda : controller.show_frame("AddClasses"),width=40,height=2)
         b13 = Button(self, text="그룹 추가하기", command = lambda : controller.show_frame("MakeGroup"),width=40,height=2)
         welcome.grid(row=0,column=0)
@@ -1331,7 +1353,7 @@ class Select_from_group_available(tk.Frame):
                 Label(self, text="%s" % (dayofweek[y])).grid(row=2, column=y + 1)
                 Label(self, text="%s" % (x)).grid(row=x + 3, column=0)
                 #print(y+1,x)
-                if {'TaskDayOfWeek': y+1, 'TaskTime': x} in ExOfUnT:
+                if {'TaskDayOfWeek': y+1, 'TaskTime': str(x)} in ExOfUnT:
                     #print("Disable!")
                     boxes[x].append(Checkbutton(self, state=DISABLED, background="#000000"))
                 else:
@@ -1911,13 +1933,13 @@ class SearchMemberResult(tk.Frame):
 
         def request(idx):
             member = res[idx]
-            sql1 = """Select * from REQUEST WHERE FromID = %s and GroupID = %s"""
-            already = db.executeAll(sql1, (UserID, group_id))
+            sql1 = """Select * from REQUEST WHERE FromID = %s and ToID = %s and GroupID = %s"""
+            already = db.executeAll(sql1, (UserID, member['UserID'], group_id))
             if len(already) != 0:
                 showinfo("Error", "이미 초대하셨습니다.")
             else:
                 sql2 = """INSERT INTO Request(FromID, ToID, GroupID,isInvite,GroupName) VALUES (%s,%s,%s,%s,%s)"""
-                db.execute(sql2, (UserID, member['UserID'], group_id, 0, gname))
+                db.execute(sql2, (UserID, member['UserID'], group_id, 1, gname))
                 showinfo("Success", "정상적으로 초대되었습니다.")
 
         for member in res:
