@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="906243e6-904b-4bff-9ad0-52d0a51cd4d9" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DB_Setup.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -111,7 +111,7 @@
       <workItem from="1575590636598" duration="22874000" />
       <workItem from="1575639586009" duration="248000" />
       <workItem from="1576046462906" duration="276000" />
-      <workItem from="1576227252270" duration="5687000" />
+      <workItem from="1576227252270" duration="5943000" />
     </task>
     <task id="LOCAL-00001" summary="font changed">
       <created>1576046666527</created>
