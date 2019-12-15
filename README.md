@@ -1,8 +1,8 @@
 # IIE2102_IIM_Term_Project
 
-This project is for "Industrial Databse Engineering" class in Yonsei University. 
+This project is for "Industrial Information Management" class in Yonsei University. 
 
-Dong Young Hwang, Dong Kyu - "CrawlingKiming" Cho, Yong Woo Kim and Won Chan Jung are the main contributors for this project. 
+Dongyeong Hwang(y0ngjaenious), Dong Kyu - "CrawlingKiming" Cho, Yongwoo Kim and Wonchan Jung are the main contributors for this project. 
 
 
 # About the Service 
@@ -10,7 +10,3 @@ Dong Young Hwang, Dong Kyu - "CrawlingKiming" Cho, Yong Woo Kim and Won Chan Jun
 Our aim is to implement such service that can search group participants, join groups that you want, or manage group schedule by checking avaliable times of all the other members.
 
 Potential Users can be students, teachers, company workers or police officers -- Yes, people those have jobs or friends will be very useful.
-
-
-
-## Handsome Guy just joined the project
