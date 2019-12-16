@@ -100,7 +100,7 @@ create table PERSONAL_SCHEDULE(
     ScheduleName Varchar(20) not null,
     ScheduleDate DATE Not null,
     ScheduleDayOfWeek int not null,
-    ScheduleTime TIME not null,
+    ScheduleTime int not null,
     constraint INDI_EVENT_PK primary key(ScheduleID),
     constraint INDI_EVENT_USER_FK Foreign Key(UserID)
       REFERENCES USERS(UserID)

@@ -1353,7 +1353,7 @@ class Select_from_group_available(tk.Frame):
                 Label(self, text="%s" % (dayofweek[y])).grid(row=2, column=y + 1)
                 Label(self, text="%s" % (x)).grid(row=x + 3, column=0)
                 #print(y+1,x)
-                if {'TaskDayOfWeek': y+1, 'TaskTime': str(x)} in ExOfUnT:
+                if {'TaskDayOfWeek': y+1, 'TaskTime': str(x)} in ExOfUnT or {'TaskDayOfWeek': y+1, 'TaskTime': x} in ExOfUnT:
                     #print("Disable!")
                     boxes[x].append(Checkbutton(self, state=DISABLED, background="#000000"))
                 else:
@@ -1570,6 +1570,8 @@ class ShowTable(tk.Frame):
             p = j % 5
 
             start = row["ScheduleTime"]
+            #print(type(start))
+            #print("-------")
             ax.fill_between([weekday - 0.4, weekday + 0.4], [start, start], [start + 1, start + 1], color=colors[p],
                             edgecolor='k', linewidth=0.5)
             nlen = len(name)
